@@ -1,0 +1,661 @@
+.screen-root {
+    flex-grow: 1;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0);
+    color: rgb(76, 111, 126);
+    -unity-font: url("/Assets/Game/Resources/UI/Fonts/Silkscreen-Regular.ttf");
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(0, 8, 13, 0.95);
+}
+
+.placeholder-backdrop {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.video-background {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.left-shade {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 42%;
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+.crt-noise {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.09);
+}
+
+.gameplay-placeholder .placeholder-backdrop {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.gameplay-placeholder .left-shade {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.gameplay-background {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.office-state-layer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.office-state-clip {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 36%;
+    overflow: hidden;
+}
+
+.office-state-left {
+    left: 0;
+}
+
+.office-state-right {
+    right: 0;
+}
+
+.office-state-image {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 277.778%;
+}
+
+.office-state-left .office-state-image {
+    left: 0;
+}
+
+.office-state-right .office-state-image {
+    left: -177.778%;
+}
+
+.menu-content {
+    position: absolute;
+    left: 7%;
+    top: 13%;
+    bottom: 10%;
+    width: 620px;
+    justify-content: center;
+}
+
+.title-block {
+    margin-bottom: 44px;
+}
+
+.game-title,
+.game-title-accent {
+    height: 76px;
+    color: rgb(79, 119, 136);
+    font-size: 72px;
+    letter-spacing: 1px;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgb(1, 11, 17);
+}
+
+.game-title-accent {
+    margin-top: -8px;
+    color: rgb(58, 105, 125);
+}
+
+.game-subtitle {
+    margin-top: 16px;
+    color: rgb(48, 78, 92);
+    font-size: 18px;
+    letter-spacing: 1px;
+}
+
+.menu-actions {
+    width: 370px;
+}
+
+.menu-button {
+    width: 360px;
+    height: 54px;
+    margin-bottom: 8px;
+    padding-left: 16px;
+    padding-right: 8px;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 2px;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-left-color: rgba(48, 90, 108, 0);
+    border-radius: 0;
+    color: rgb(66, 104, 121);
+    font-size: 24px;
+    letter-spacing: 2px;
+    -unity-text-align: middle-left;
+    transition-property: color, border-left-color, translate;
+    transition-duration: 0.08s;
+}
+
+.menu-button:hover,
+.menu-button:focus {
+    translate: 5px 0;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-color: rgb(75, 132, 155);
+    color: rgb(93, 148, 170);
+}
+
+.menu-button:active {
+    color: rgb(122, 172, 190);
+}
+
+.primary-button {
+    color: rgb(77, 124, 142);
+}
+
+.footer-label {
+    position: absolute;
+    left: 7%;
+    bottom: 28px;
+    color: rgb(38, 64, 75);
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.eyebrow {
+    color: rgb(68, 111, 129);
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.settings-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 5, 9, 0.9);
+}
+
+.settings-panel {
+    width: 560px;
+    min-height: 440px;
+    padding: 46px;
+    background-color: rgb(4, 13, 19);
+    border-left-width: 2px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(53, 99, 119);
+    border-right-color: rgb(24, 47, 58);
+    border-top-color: rgb(24, 47, 58);
+    border-bottom-color: rgb(24, 47, 58);
+}
+
+.panel-title {
+    margin-bottom: 12px;
+    color: rgb(82, 126, 144);
+    font-size: 34px;
+    letter-spacing: 2px;
+}
+
+.panel-description {
+    margin-bottom: 44px;
+    color: rgb(48, 77, 89);
+    font-size: 12px;
+}
+
+.settings-control {
+    min-height: 54px;
+    margin-bottom: 22px;
+    color: rgb(68, 107, 123);
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.settings-back-button {
+    margin-top: 30px;
+}
+
+.demo-hud {
+    position: absolute;
+    left: 54px;
+    right: 54px;
+    top: 40px;
+    height: 70px;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: flex-start;
+}
+
+.clock-label {
+    padding: 8px 12px;
+    background-color: rgba(0, 0, 0, 0.36);
+    color: rgb(103, 141, 156);
+    font-size: 34px;
+    letter-spacing: 2px;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.95);
+}
+
+.battery-hud {
+    position: absolute;
+    left: 54px;
+    bottom: 42px;
+    padding: 10px 14px;
+    background-color: rgba(0, 0, 0, 0.38);
+}
+
+.battery-caption {
+    color: rgb(72, 100, 111);
+    font-size: 13px;
+    letter-spacing: 1px;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.95);
+}
+
+.battery-value {
+    margin-top: 3px;
+    color: rgb(103, 141, 156);
+    font-size: 28px;
+    letter-spacing: 2px;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.95);
+}
+
+.battery-safe {
+    color: rgb(75, 166, 91);
+}
+
+.battery-warning {
+    color: rgb(202, 166, 54);
+}
+
+.battery-critical {
+    color: rgb(199, 57, 57);
+}
+
+.office-controls-layer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+.office-controls {
+    position: absolute;
+    top: 31%;
+    width: 112px;
+    padding: 8px;
+    background-color: rgba(2, 5, 6, 0.76);
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-top-color: rgb(35, 45, 47);
+    border-bottom-color: rgb(18, 24, 26);
+}
+
+.office-controls-left {
+    left: 0;
+    border-right-width: 2px;
+    border-right-color: rgb(42, 54, 57);
+}
+
+.office-controls-right {
+    right: 0;
+    border-left-width: 2px;
+    border-left-color: rgb(42, 54, 57);
+}
+
+.office-control-button {
+    width: 96px;
+    height: 62px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    padding: 0;
+    background-color: rgb(11, 15, 16);
+    border-left-width: 4px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-right-color: rgb(43, 51, 52);
+    border-top-color: rgb(43, 51, 52);
+    border-bottom-color: rgb(24, 29, 30);
+    border-radius: 0;
+    color: rgb(102, 118, 122);
+    font-size: 16px;
+    letter-spacing: 1px;
+    -unity-text-align: middle-center;
+}
+
+.door-control-button {
+    border-left-color: rgb(111, 43, 45);
+}
+
+.light-control-button {
+    border-left-color: rgb(123, 105, 42);
+}
+
+.office-control-button:hover,
+.office-control-button:focus {
+    background-color: rgb(20, 27, 29);
+    color: rgb(137, 155, 160);
+}
+
+.office-control-button:active {
+    translate: 1px 1px;
+    background-color: rgb(6, 9, 10);
+}
+
+.door-control-button.office-control-active {
+    background-color: rgb(62, 19, 21);
+    border-left-color: rgb(203, 62, 65);
+    border-right-color: rgb(112, 38, 40);
+    border-top-color: rgb(112, 38, 40);
+    border-bottom-color: rgb(76, 25, 27);
+    color: rgb(231, 137, 139);
+}
+
+.light-control-button.office-control-active {
+    background-color: rgb(70, 58, 13);
+    border-left-color: rgb(229, 195, 58);
+    border-right-color: rgb(134, 111, 34);
+    border-top-color: rgb(134, 111, 34);
+    border-bottom-color: rgb(88, 73, 22);
+    color: rgb(242, 218, 126);
+}
+
+.camera-toggle-button {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    width: 420px;
+    height: 52px;
+    translate: -210px 0;
+    padding: 0;
+    background-color: rgba(3, 9, 11, 0.9);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 2px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(38, 61, 69);
+    border-right-color: rgb(38, 61, 69);
+    border-top-color: rgb(76, 112, 126);
+    border-bottom-color: rgb(21, 36, 42);
+    border-radius: 0;
+    color: rgb(78, 113, 126);
+    font-size: 17px;
+    letter-spacing: 2px;
+}
+
+.camera-toggle-button:hover,
+.camera-toggle-button:focus {
+    background-color: rgba(9, 21, 25, 0.96);
+    color: rgb(111, 151, 165);
+    border-top-color: rgb(104, 148, 164);
+}
+
+.camera-toggle-button:active {
+    translate: -210px 2px;
+}
+
+.camera-dashboard {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    padding: 42px 52px 86px 52px;
+    background-color: rgba(1, 5, 7, 0.97);
+}
+
+.camera-top-bar {
+    height: 66px;
+    padding-right: 170px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(36, 63, 73);
+}
+
+.camera-dashboard-title {
+    color: rgb(89, 128, 142);
+    font-size: 28px;
+    letter-spacing: 3px;
+}
+
+.active-camera-label {
+    color: rgb(110, 151, 165);
+    font-size: 25px;
+    letter-spacing: 2px;
+}
+
+.camera-workspace {
+    flex-grow: 1;
+    margin-top: 26px;
+    flex-direction: row;
+}
+
+.camera-feed-panel,
+.camera-map-panel {
+    background-color: rgba(3, 11, 14, 0.88);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(29, 52, 60);
+    border-right-color: rgb(17, 34, 40);
+    border-top-color: rgb(29, 52, 60);
+    border-bottom-color: rgb(17, 34, 40);
+}
+
+.camera-feed-panel {
+    flex-grow: 1;
+    margin-right: 26px;
+    padding: 20px;
+}
+
+.camera-map-panel {
+    width: 620px;
+    padding: 20px;
+}
+
+.camera-section-label {
+    height: 30px;
+    color: rgb(60, 93, 105);
+    font-size: 14px;
+    letter-spacing: 2px;
+}
+
+.camera-feed-placeholder {
+    flex-grow: 1;
+    align-self: stretch;
+    padding-top: 28%;
+    background-color: rgb(1, 4, 5);
+    color: rgb(55, 79, 87);
+    font-size: 24px;
+    letter-spacing: 2px;
+    -unity-text-align: upper-center;
+    white-space: normal;
+}
+
+.camera-map {
+    position: relative;
+    flex-grow: 1;
+    margin-top: 8px;
+    background-color: rgb(2, 7, 9);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(23, 44, 51);
+    border-right-color: rgb(23, 44, 51);
+    border-top-color: rgb(23, 44, 51);
+    border-bottom-color: rgb(23, 44, 51);
+}
+
+.camera-map-room {
+    position: absolute;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 6px;
+    background-color: rgba(8, 19, 23, 0.76);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(38, 64, 73);
+    border-right-color: rgb(38, 64, 73);
+    border-top-color: rgb(38, 64, 73);
+    border-bottom-color: rgb(38, 64, 73);
+}
+
+.camera-map-room-label {
+    color: rgb(42, 67, 76);
+    font-size: 10px;
+    letter-spacing: 1px;
+    white-space: normal;
+    -unity-text-align: upper-center;
+}
+
+.camera-route-segment {
+    position: absolute;
+    background-color: rgb(91, 139, 153);
+    opacity: 0.9;
+}
+
+.camera-node-button {
+    position: absolute;
+    width: 70px;
+    height: 32px;
+    padding: 0;
+    background-color: rgb(10, 25, 30);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(49, 83, 94);
+    border-right-color: rgb(49, 83, 94);
+    border-top-color: rgb(49, 83, 94);
+    border-bottom-color: rgb(49, 83, 94);
+    border-radius: 0;
+    color: rgb(79, 116, 129);
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.camera-player-marker {
+    position: absolute;
+    width: 58px;
+    height: 27px;
+    padding-top: 5px;
+    background-color: rgb(72, 54, 18);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(185, 145, 53);
+    border-right-color: rgb(185, 145, 53);
+    border-top-color: rgb(185, 145, 53);
+    border-bottom-color: rgb(185, 145, 53);
+    color: rgb(226, 191, 105);
+    font-size: 10px;
+    letter-spacing: 1px;
+    -unity-text-align: upper-center;
+}
+
+.camera-node-button:hover,
+.camera-node-button:focus {
+    background-color: rgb(16, 38, 45);
+    color: rgb(117, 157, 171);
+}
+
+.camera-node-selected {
+    background-color: rgb(35, 70, 79);
+    border-left-color: rgb(111, 157, 171);
+    border-right-color: rgb(111, 157, 171);
+    border-top-color: rgb(111, 157, 171);
+    border-bottom-color: rgb(111, 157, 171);
+    color: rgb(151, 187, 198);
+}
+
+.power-readout {
+    align-items: flex-end;
+}
+
+.power-caption {
+    color: rgb(46, 77, 90);
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.power-value {
+    color: rgb(75, 128, 149);
+    font-size: 25px;
+}
+
+.placeholder-card {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 600px;
+    min-height: 350px;
+    translate: -300px -175px;
+    padding: 44px;
+    background-color: rgba(4, 14, 20, 0.96);
+    border-left-width: 2px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(56, 105, 124);
+    border-right-color: rgb(23, 47, 57);
+    border-top-color: rgb(23, 47, 57);
+    border-bottom-color: rgb(23, 47, 57);
+}
+
+.placeholder-heading {
+    margin-top: 12px;
+    color: rgb(81, 126, 144);
+    font-size: 29px;
+    letter-spacing: 2px;
+}
+
+.placeholder-copy {
+    margin-top: 24px;
+    margin-bottom: 34px;
+    color: rgb(55, 87, 100);
+    font-size: 13px;
+    white-space: normal;
+}
