@@ -29,6 +29,22 @@ namespace FiveNightsAtLidl.Editor
             "Assets/Game/Art/Backgrounds/OfficeDoorLeft.png";
         private const string OfficeRightDoorPath =
             "Assets/Game/Art/Backgrounds/OfficeDoorRight.png";
+        private const string DairyCameraFeedPath =
+            "Assets/Game/Art/CameraFeeds/Cam01_Dairy.png";
+        private const string BakeryCameraFeedPath =
+            "Assets/Game/Art/CameraFeeds/Cam02_Bakery.png";
+        private const string ParksideCameraFeedPath =
+            "Assets/Game/Art/CameraFeeds/Cam03_Parkside.png";
+        private const string DetergentsCameraFeedPath =
+            "Assets/Game/Art/CameraFeeds/Cam04_Detergents.png";
+        private const string IceCreamCameraFeedPath =
+            "Assets/Game/Art/CameraFeeds/Cam05_IceCream.png";
+        private const string CheckoutsCameraFeedPath =
+            "Assets/Game/Art/CameraFeeds/Cam06_Checkouts.png";
+        private const string StockroomCameraFeedPath =
+            "Assets/Game/Art/CameraFeeds/Cam07_Stockroom.png";
+        private const string EmployeeRoomCameraFeedPath =
+            "Assets/Game/Art/CameraFeeds/Cam08_EmployeeRoom.png";
         private const string MenuRenderTexturePath = "Assets/Game/Settings/MenuBackground.renderTexture";
         private const string MacBuildPath = "Builds/macOS/FiveNightsAtLidl.app";
 
@@ -50,6 +66,14 @@ namespace FiveNightsAtLidl.Editor
             Texture2D rightLightBackground = LoadRequiredTexture(OfficeRightLightPath);
             Texture2D leftDoorBackground = LoadRequiredTexture(OfficeLeftDoorPath);
             Texture2D rightDoorBackground = LoadRequiredTexture(OfficeRightDoorPath);
+            Texture2D dairyCameraFeed = LoadRequiredTexture(DairyCameraFeedPath);
+            Texture2D bakeryCameraFeed = LoadRequiredTexture(BakeryCameraFeedPath);
+            Texture2D parksideCameraFeed = LoadRequiredTexture(ParksideCameraFeedPath);
+            Texture2D detergentsCameraFeed = LoadRequiredTexture(DetergentsCameraFeedPath);
+            Texture2D iceCreamCameraFeed = LoadRequiredTexture(IceCreamCameraFeedPath);
+            Texture2D checkoutsCameraFeed = LoadRequiredTexture(CheckoutsCameraFeedPath);
+            Texture2D stockroomCameraFeed = LoadRequiredTexture(StockroomCameraFeedPath);
+            Texture2D employeeRoomCameraFeed = LoadRequiredTexture(EmployeeRoomCameraFeedPath);
 
             RenderTexture menuRenderTexture = CreateOrUpdateMenuRenderTexture();
             CreateMainMenuScene(panelSettings, menuVideo, menuRenderTexture);
@@ -59,7 +83,15 @@ namespace FiveNightsAtLidl.Editor
                 leftLightBackground,
                 rightLightBackground,
                 leftDoorBackground,
-                rightDoorBackground);
+                rightDoorBackground,
+                dairyCameraFeed,
+                bakeryCameraFeed,
+                parksideCameraFeed,
+                detergentsCameraFeed,
+                iceCreamCameraFeed,
+                checkoutsCameraFeed,
+                stockroomCameraFeed,
+                employeeRoomCameraFeed);
             ConfigureBuildScenes();
             ConfigurePlayerSettings();
 
@@ -152,7 +184,15 @@ namespace FiveNightsAtLidl.Editor
             Texture2D leftLightBackground,
             Texture2D rightLightBackground,
             Texture2D leftDoorBackground,
-            Texture2D rightDoorBackground)
+            Texture2D rightDoorBackground,
+            Texture2D dairyCameraFeed,
+            Texture2D bakeryCameraFeed,
+            Texture2D parksideCameraFeed,
+            Texture2D detergentsCameraFeed,
+            Texture2D iceCreamCameraFeed,
+            Texture2D checkoutsCameraFeed,
+            Texture2D stockroomCameraFeed,
+            Texture2D employeeRoomCameraFeed)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             CreatePresentationCamera();
@@ -167,7 +207,15 @@ namespace FiveNightsAtLidl.Editor
                 leftLightBackground,
                 rightLightBackground,
                 leftDoorBackground,
-                rightDoorBackground);
+                rightDoorBackground,
+                dairyCameraFeed,
+                bakeryCameraFeed,
+                parksideCameraFeed,
+                detergentsCameraFeed,
+                iceCreamCameraFeed,
+                checkoutsCameraFeed,
+                stockroomCameraFeed,
+                employeeRoomCameraFeed);
 
             EditorSceneManager.SaveScene(scene, DemoScenePath);
         }

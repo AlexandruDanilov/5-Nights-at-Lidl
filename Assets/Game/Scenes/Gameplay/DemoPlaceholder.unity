@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &1270679919
+--- !u!1 &1481180681
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,9 +127,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1270679922}
-  - component: {fileID: 1270679921}
-  - component: {fileID: 1270679920}
+  - component: {fileID: 1481180684}
+  - component: {fileID: 1481180683}
+  - component: {fileID: 1481180682}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -137,21 +137,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1270679920
+--- !u!81 &1481180682
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1270679919}
+  m_GameObject: {fileID: 1481180681}
   m_Enabled: 1
---- !u!20 &1270679921
+--- !u!20 &1481180683
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1270679919}
+  m_GameObject: {fileID: 1481180681}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -196,13 +196,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &1270679922
+--- !u!4 &1481180684
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1270679919}
+  m_GameObject: {fileID: 1481180681}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -211,7 +211,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1734850533
+--- !u!1 &2053316429
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -219,9 +219,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1734850536}
-  - component: {fileID: 1734850535}
-  - component: {fileID: 1734850534}
+  - component: {fileID: 2053316432}
+  - component: {fileID: 2053316431}
+  - component: {fileID: 2053316430}
   m_Layer: 0
   m_Name: Main Gameplay
   m_TagString: Untagged
@@ -229,37 +229,46 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1734850534
+--- !u!114 &2053316430
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1734850533}
+  m_GameObject: {fileID: 2053316429}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 261d4760e95a248cdb89059c5a633c81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: FiveNightsAtLidl.Runtime::FiveNightsAtLidl.UI.DemoPlaceholderController
+  _nightNumber: 1
   _fallbackPanelSettings: {fileID: 11400000, guid: 2bd33264763d74462a7c9201ea703d46, type: 2}
   _officeBackground: {fileID: 2800000, guid: 3ddd64f859c7c419586bc1f610b6db32, type: 3}
   _leftLightBackground: {fileID: 2800000, guid: 5456c9cf3b0704a4081969fcb18e568a, type: 3}
   _rightLightBackground: {fileID: 2800000, guid: 88898338996a24be7ae9655bf3be0db0, type: 3}
   _leftDoorBackground: {fileID: 2800000, guid: cf1b692567dbe4eee9b257c728babb22, type: 3}
   _rightDoorBackground: {fileID: 2800000, guid: 90a4d2aad741a4b4ba33ca5780c51185, type: 3}
---- !u!114 &1734850535
+  _dairyCameraFeed: {fileID: 2800000, guid: 8f09d730b8a548ad88523b858281e13e, type: 3}
+  _bakeryCameraFeed: {fileID: 2800000, guid: 4b758d6565f04ceb879799624392915c, type: 3}
+  _parksideCameraFeed: {fileID: 2800000, guid: e72ff88baab9e46fab543ea00158f0ff, type: 3}
+  _detergentsCameraFeed: {fileID: 2800000, guid: f331cacd83a94195a90584ff5822d5b3, type: 3}
+  _iceCreamCameraFeed: {fileID: 2800000, guid: e89f121be367407797e72e11691f1784, type: 3}
+  _checkoutsCameraFeed: {fileID: 2800000, guid: dfe5170c9d9e462dbfa014943faa61e3, type: 3}
+  _stockroomCameraFeed: {fileID: 2800000, guid: 1c0311c953fb346d28a88b698a635211, type: 3}
+  _employeeRoomCameraFeed: {fileID: 2800000, guid: cc7271bc55c748d48daec35b34d3857e, type: 3}
+--- !u!114 &2053316431
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1734850533}
+  m_GameObject: {fileID: 2053316429}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
-  m_PanelSettings: {fileID: 11400000, guid: 2bd33264763d74462a7c9201ea703d46, type: 2}
+  m_PanelSettings: {fileID: 0}
   m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 0}
   m_SortingOrder: 0
@@ -270,13 +279,13 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!4 &1734850536
+--- !u!4 &2053316432
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1734850533}
+  m_GameObject: {fileID: 2053316429}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -289,5 +298,5 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1270679922}
-  - {fileID: 1734850536}
+  - {fileID: 1481180684}
+  - {fileID: 2053316432}

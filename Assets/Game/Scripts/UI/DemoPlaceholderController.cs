@@ -22,6 +22,10 @@ namespace FiveNightsAtLidl.UI
             StandardUsageDrainPerSecond * 0.5f;
         private const int CriticalBatteryMaximum = 20;
         private const int WarningBatteryMaximum = 70;
+        private const float PreNightTitleDurationSeconds = 3f;
+
+        [SerializeField, Min(1)]
+        private int _nightNumber = 1;
 
         [SerializeField]
         private PanelSettings _fallbackPanelSettings;
@@ -41,14 +45,43 @@ namespace FiveNightsAtLidl.UI
         [SerializeField]
         private Texture2D _rightDoorBackground;
 
+        [SerializeField]
+        private Texture2D _dairyCameraFeed;
+
+        [SerializeField]
+        private Texture2D _bakeryCameraFeed;
+
+        [SerializeField]
+        private Texture2D _parksideCameraFeed;
+
+        [SerializeField]
+        private Texture2D _detergentsCameraFeed;
+
+        [SerializeField]
+        private Texture2D _iceCreamCameraFeed;
+
+        [SerializeField]
+        private Texture2D _checkoutsCameraFeed;
+
+        [SerializeField]
+        private Texture2D _stockroomCameraFeed;
+
+        [SerializeField]
+        private Texture2D _employeeRoomCameraFeed;
+
         private Label _clockLabel;
         private Label _batteryLabel;
         private Label _activeCameraLabel;
         private Label _feedPlaceholderLabel;
+        private VisualElement _nightIntroOverlay;
         private VisualElement _officeControlsLayer;
         private VisualElement _cameraDashboard;
+        private VisualElement _cameraFeedViewport;
+        private VisualElement _cameraFlickerOverlay;
+        private VisualElement _cameraScanBar;
         private Image _leftOfficeStateImage;
         private Image _rightOfficeStateImage;
+        private Image _cameraFeedImage;
         private Button _leftLightButton;
         private Button _rightLightButton;
         private Button _leftDoorButton;
@@ -56,6 +89,9 @@ namespace FiveNightsAtLidl.UI
         private Button _selectedCameraButton;
         private float _elapsedNightSeconds;
         private float _batteryRemaining;
+        private float _nextCameraFeedFlickerAt;
+        private float _cameraFeedFlickerUntil;
+        private float _preNightTitleRemaining;
         private int _displayedHour = -1;
         private int _displayedBatteryPercent = -1;
         private bool _leftLightOn;
@@ -63,6 +99,8 @@ namespace FiveNightsAtLidl.UI
         private bool _leftDoorClosed;
         private bool _rightDoorClosed;
         private bool _cameraDashboardOpen;
+        private bool _cameraFeedActive;
+        private bool _nightStarted;
 
         private void OnEnable()
         {
@@ -79,6 +117,9 @@ namespace FiveNightsAtLidl.UI
             _leftDoorClosed = false;
             _rightDoorClosed = false;
             _cameraDashboardOpen = false;
+            _cameraFeedActive = false;
+            _nightStarted = false;
+            _preNightTitleRemaining = PreNightTitleDurationSeconds;
             BuildInterface();
             UpdateClock(force: true);
             UpdateBatteryReadout();
@@ -104,6 +145,19 @@ namespace FiveNightsAtLidl.UI
 
         private void Update()
         {
+            if (!_nightStarted)
+            {
+                _preNightTitleRemaining -= Time.unscaledDeltaTime;
+                if (_preNightTitleRemaining <= 0f)
+                {
+                    BeginNight();
+                }
+
+                return;
+            }
+
+            AnimateCameraFeed();
+
             if (_displayedHour >= FinalHour)
             {
                 return;
@@ -177,7 +231,28 @@ namespace FiveNightsAtLidl.UI
             BuildCameraDashboard(root);
             hud.BringToFront();
             batteryHud.BringToFront();
+            BuildNightIntro(root);
             root.schedule.Execute(root.Focus);
+        }
+
+        private void BuildNightIntro(VisualElement root)
+        {
+            _nightIntroOverlay = new VisualElement { name = "night-intro-overlay" };
+            _nightIntroOverlay.AddToClassList("night-intro-overlay");
+            _nightIntroOverlay.Add(MenuUiFactory.CreateLabel(
+                $"NIGHT {_nightNumber}",
+                "night-intro-title"));
+            root.Add(_nightIntroOverlay);
+            _nightIntroOverlay.BringToFront();
+        }
+
+        private void BeginNight()
+        {
+            _nightStarted = true;
+            if (_nightIntroOverlay != null)
+            {
+                _nightIntroOverlay.style.display = DisplayStyle.None;
+            }
         }
 
         private void BuildOfficeControls(VisualElement root)
@@ -387,10 +462,36 @@ namespace FiveNightsAtLidl.UI
             VisualElement feedPanel = new VisualElement();
             feedPanel.AddToClassList("camera-feed-panel");
             feedPanel.Add(MenuUiFactory.CreateLabel("LIVE FEED", "camera-section-label"));
+
+            _cameraFeedViewport = new VisualElement { name = "camera-feed-viewport" };
+            _cameraFeedViewport.AddToClassList("camera-feed-viewport");
+
+            _cameraFeedImage = new Image
+            {
+                name = "camera-feed-image",
+                scaleMode = ScaleMode.ScaleAndCrop,
+                pickingMode = PickingMode.Ignore
+            };
+            _cameraFeedImage.AddToClassList("camera-feed-image");
+            _cameraFeedViewport.Add(_cameraFeedImage);
+
             _feedPlaceholderLabel = MenuUiFactory.CreateLabel(
                 "CAM 01\nDAIRY\nFEED NOT CONNECTED",
                 "camera-feed-placeholder");
-            feedPanel.Add(_feedPlaceholderLabel);
+            _cameraFeedViewport.Add(_feedPlaceholderLabel);
+
+            _cameraFlickerOverlay = new VisualElement { name = "camera-feed-flicker" };
+            _cameraFlickerOverlay.pickingMode = PickingMode.Ignore;
+            _cameraFlickerOverlay.AddToClassList("camera-feed-flicker");
+            _cameraFeedViewport.Add(_cameraFlickerOverlay);
+
+            _cameraScanBar = new VisualElement { name = "camera-feed-scan-bar" };
+            _cameraScanBar.pickingMode = PickingMode.Ignore;
+            _cameraScanBar.AddToClassList("camera-feed-scan-bar");
+            _cameraFeedViewport.Add(_cameraScanBar);
+
+            feedPanel.Add(_cameraFeedViewport);
+            UpdateCameraFeed("CAM 01", "DAIRY");
             workspace.Add(feedPanel);
 
             VisualElement mapPanel = new VisualElement();
@@ -404,8 +505,8 @@ namespace FiveNightsAtLidl.UI
 
             AddMapRoom(map, "DAIRY", 4f, 4f, 68f, 12f);
             AddMapRoom(map, "BAKERY", 4f, 20f, 13f, 34f);
-            AddMapRoom(map, "PASTRY", 21f, 20f, 13f, 34f);
-            AddMapRoom(map, "BISCUITS", 38f, 20f, 13f, 34f);
+            AddMapRoom(map, "PARKSIDE", 21f, 20f, 13f, 34f);
+            AddMapRoom(map, "DETERGENTS", 38f, 20f, 13f, 34f);
             AddMapRoom(map, "ICE CREAM", 55f, 20f, 17f, 34f);
             AddMapRoom(map, "STOCKROOM", 76f, 18f, 20f, 69f);
             AddMapRoom(map, "CHECKOUTS", 4f, 58f, 27f, 30f);
@@ -427,8 +528,8 @@ namespace FiveNightsAtLidl.UI
 
             CreateCameraNode(map, "CAM 01", "DAIRY", 56f, 7f, selectedByDefault: true);
             CreateCameraNode(map, "CAM 02", "BAKERY", 4.5f, 43f);
-            CreateCameraNode(map, "CAM 03", "PASTRY", 21.5f, 43f);
-            CreateCameraNode(map, "CAM 04", "BISCUITS", 38.5f, 43f);
+            CreateCameraNode(map, "CAM 03", "PARKSIDE", 21.5f, 43f);
+            CreateCameraNode(map, "CAM 04", "DETERGENTS", 38.5f, 43f);
             CreateCameraNode(map, "CAM 05", "ICE CREAM", 57f, 43f);
             CreateCameraNode(map, "CAM 06", "CHECKOUTS", 7f, 78f);
             CreateCameraNode(map, "CAM 07", "STOCKROOM", 79f, 72f);
@@ -526,7 +627,103 @@ namespace FiveNightsAtLidl.UI
             _selectedCameraButton = cameraButton;
             _selectedCameraButton.AddToClassList("camera-node-selected");
             _activeCameraLabel.text = $"{cameraId} / {locationName}";
-            _feedPlaceholderLabel.text = $"{cameraId}\n{locationName}\nFEED NOT CONNECTED";
+            UpdateCameraFeed(cameraId, locationName);
+        }
+
+        private void UpdateCameraFeed(string cameraId, string locationName)
+        {
+            Texture2D feedTexture = null;
+            if (cameraId == "CAM 01")
+            {
+                feedTexture = _dairyCameraFeed;
+            }
+            else if (cameraId == "CAM 02")
+            {
+                feedTexture = _bakeryCameraFeed;
+            }
+            else if (cameraId == "CAM 03")
+            {
+                feedTexture = _parksideCameraFeed;
+            }
+            else if (cameraId == "CAM 04")
+            {
+                feedTexture = _detergentsCameraFeed;
+            }
+            else if (cameraId == "CAM 05")
+            {
+                feedTexture = _iceCreamCameraFeed;
+            }
+            else if (cameraId == "CAM 06")
+            {
+                feedTexture = _checkoutsCameraFeed;
+            }
+            else if (cameraId == "CAM 07")
+            {
+                feedTexture = _stockroomCameraFeed;
+            }
+            else if (cameraId == "CAM 08")
+            {
+                feedTexture = _employeeRoomCameraFeed;
+            }
+
+            _cameraFeedActive = feedTexture != null;
+            _cameraFeedImage.image = feedTexture;
+            _cameraFeedImage.style.display = _cameraFeedActive
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+            _feedPlaceholderLabel.style.display = _cameraFeedActive
+                ? DisplayStyle.None
+                : DisplayStyle.Flex;
+            _cameraFlickerOverlay.style.display = _cameraFeedActive
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+            _cameraScanBar.style.display = _cameraFeedActive
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+
+            if (!_cameraFeedActive)
+            {
+                _feedPlaceholderLabel.text = $"{cameraId}\n{locationName}\nFEED NOT CONNECTED";
+                return;
+            }
+
+            float now = Time.unscaledTime;
+            _nextCameraFeedFlickerAt = now + Random.Range(0.7f, 1.8f);
+            _cameraFeedFlickerUntil = 0f;
+            _cameraFeedImage.style.left = new Length(-2.5f, LengthUnit.Percent);
+            _cameraFeedImage.style.top = new Length(-2.5f, LengthUnit.Percent);
+        }
+
+        private void AnimateCameraFeed()
+        {
+            if (!_cameraDashboardOpen || !_cameraFeedActive || _cameraFeedImage == null)
+            {
+                return;
+            }
+
+            float now = Time.unscaledTime;
+            float panX = -2.5f + Mathf.Sin(now * 0.18f) * 1.15f;
+            float panY = -2.5f + Mathf.Sin(now * 0.13f + 1.1f) * 0.75f;
+            _cameraFeedImage.style.left = new Length(panX, LengthUnit.Percent);
+            _cameraFeedImage.style.top = new Length(panY, LengthUnit.Percent);
+
+            if (now >= _nextCameraFeedFlickerAt)
+            {
+                _cameraFeedFlickerUntil = now + Random.Range(0.025f, 0.075f);
+                _nextCameraFeedFlickerAt = now + Random.Range(0.9f, 2.5f);
+            }
+
+            bool isFlickering = now < _cameraFeedFlickerUntil;
+            float quietNoise = Mathf.PerlinNoise(now * 7.3f, 0.37f);
+            _cameraFeedImage.style.opacity = isFlickering
+                ? Random.Range(0.82f, 0.91f)
+                : 0.96f + (quietNoise - 0.5f) * 0.025f;
+            _cameraFlickerOverlay.style.opacity = isFlickering
+                ? 0.09f
+                : 0.008f + quietNoise * 0.015f;
+
+            float scanPosition = (now * 3.5f) % 105f - 2.5f;
+            _cameraScanBar.style.top = new Length(scanPosition, LengthUnit.Percent);
         }
 
         private void ShowCameraDashboard()
@@ -561,7 +758,15 @@ namespace FiveNightsAtLidl.UI
             Texture2D leftLightBackground,
             Texture2D rightLightBackground,
             Texture2D leftDoorBackground,
-            Texture2D rightDoorBackground)
+            Texture2D rightDoorBackground,
+            Texture2D dairyCameraFeed,
+            Texture2D bakeryCameraFeed,
+            Texture2D parksideCameraFeed,
+            Texture2D detergentsCameraFeed,
+            Texture2D iceCreamCameraFeed,
+            Texture2D checkoutsCameraFeed,
+            Texture2D stockroomCameraFeed,
+            Texture2D employeeRoomCameraFeed)
         {
             _fallbackPanelSettings = panelSettings;
             _officeBackground = officeBackground;
@@ -569,6 +774,14 @@ namespace FiveNightsAtLidl.UI
             _rightLightBackground = rightLightBackground;
             _leftDoorBackground = leftDoorBackground;
             _rightDoorBackground = rightDoorBackground;
+            _dairyCameraFeed = dairyCameraFeed;
+            _bakeryCameraFeed = bakeryCameraFeed;
+            _parksideCameraFeed = parksideCameraFeed;
+            _detergentsCameraFeed = detergentsCameraFeed;
+            _iceCreamCameraFeed = iceCreamCameraFeed;
+            _checkoutsCameraFeed = checkoutsCameraFeed;
+            _stockroomCameraFeed = stockroomCameraFeed;
+            _employeeRoomCameraFeed = employeeRoomCameraFeed;
         }
 
         private void UpdateClock(bool force)

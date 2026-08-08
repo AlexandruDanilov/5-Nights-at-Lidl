@@ -147,14 +147,14 @@ Number of feeds: **8** for the current floor plan.
 
 | Camera ID | Location name | Purpose in route | Required view/notes |
 |---|---|---|---|
-| CAM 01 | Dairy | Store-floor route | Creator-provided still needed. |
-| CAM 02 | Bakery | Store-floor route | Creator-provided still needed. |
-| CAM 03 | Pastry | Store-floor route | Creator-provided still needed. |
-| CAM 04 | Biscuits | Store-floor route | Creator-provided still needed. |
-| CAM 05 | Ice Cream | Store-floor route beside stockroom | Creator-provided still needed. |
-| CAM 06 | Checkouts | Left-side approach to office | Creator-provided still needed. |
-| CAM 07 | Stockroom | Right-side route origin | Creator-provided still needed. |
-| CAM 08 | Employee Room | Right-side approach to office | Creator-provided still needed. |
+| CAM 01 | Dairy | Store-floor route | Connected creator-provided still with subtle surveillance motion and flicker. |
+| CAM 02 | Bakery | Store-floor route | Connected creator-provided still with subtle surveillance motion and flicker. |
+| CAM 03 | Parkside | Tools-lane route | Connected creator-provided still with subtle surveillance motion and flicker. |
+| CAM 04 | Detergents | Cleaning-products lane | Connected creator-provided still with subtle surveillance motion and flicker. |
+| CAM 05 | Ice Cream | Store-floor route beside stockroom | Connected creator-provided still with subtle surveillance motion and flicker. |
+| CAM 06 | Checkouts | Left-side approach to office | Connected creator-provided still with subtle surveillance motion and flicker. |
+| CAM 07 | Stockroom | Right-side route origin | Connected creator-provided still with subtle surveillance motion and flicker. |
+| CAM 08 | Employee Room | Right-side approach to office | Connected creator-provided still with subtle surveillance motion and flicker. |
 
 Add or remove rows once the character's route is defined.
 
@@ -177,8 +177,10 @@ Every provisional route uses the same visual treatment. The current connections
 are CAM 01–02, CAM 01–03, CAM 01–04, CAM 01–05, CAM 02–03, CAM 02–06,
 CAM 03–04, CAM 04–05, CAM 05–07, CAM 06–Office, CAM 07–08, and CAM 08–Office. These links
 are non-directional visual planning aids and will be finalized alongside the
-hostile character's movement design. No camera-feed artwork or feed behavior is
-connected yet. Left and right
+hostile character's movement design. CAM 01 through CAM 08 now
+display the creator-provided Dairy, Bakery, Parkside tools-lane, Detergents, Ice
+Cream, Checkouts, Stockroom, and Employee Room stills with restrained slow pan,
+brightness flicker, and a moving scan bar. Left and right
 door/light controls toggle their respective generated office states. A closed
 door visually takes priority over an active light on the same side. Additional
 power drain for doors and lights is not yet connected.
@@ -409,6 +411,8 @@ The mechanical demo is successful when all of the following work with placeholde
 media:
 
 - The player can start a night from the menu.
+- A black three-second title card displays the current night number before the
+  clock and battery drain begin.
 - Both doors open and close independently.
 - Both lights reveal the correct doorway state.
 - The camera monitor opens, closes, and switches between every configured feed.
