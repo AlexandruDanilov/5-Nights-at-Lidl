@@ -22,6 +22,8 @@ namespace FiveNightsAtLidl.UI
         private VisualElement _settingsOverlay;
         private Button _startButton;
         private Button _settingsButton;
+        private Label _currentNightLabel;
+        private Label _progressResetStatusLabel;
 
         private void OnEnable()
         {
@@ -69,12 +71,16 @@ namespace FiveNightsAtLidl.UI
             titleBlock.Add(MenuUiFactory.CreateLabel(
                 "You've been hired as a night security guard.",
                 "game-subtitle"));
+            _currentNightLabel = MenuUiFactory.CreateLabel(
+                $"CURRENT NIGHT  {MenuPreferences.CurrentNight}",
+                "current-night-label");
+            titleBlock.Add(_currentNightLabel);
             _menuContent.Add(titleBlock);
 
             VisualElement actions = new VisualElement();
             actions.AddToClassList("menu-actions");
 
-            _startButton = MenuUiFactory.CreateButton("START DEMO", StartDemo, "start-demo-button");
+            _startButton = MenuUiFactory.CreateButton("START NIGHT", StartDemo, "start-demo-button");
             _startButton.AddToClassList("primary-button");
             actions.Add(_startButton);
 
@@ -137,6 +143,26 @@ namespace FiveNightsAtLidl.UI
             });
             panel.Add(fullscreen);
 
+            panel.Add(MenuUiFactory.CreateLabel(
+                "NIGHT PROGRESS",
+                "settings-section-label"));
+            panel.Add(MenuUiFactory.CreateLabel(
+                $"Currently on Night {MenuPreferences.CurrentNight}.",
+                "night-progress-description"));
+
+            Button resetProgressButton = MenuUiFactory.CreateButton(
+                "RESET TO NIGHT 1",
+                ResetNightProgress,
+                "reset-night-progress-button");
+            resetProgressButton.AddToClassList("reset-progress-button");
+            panel.Add(resetProgressButton);
+
+            _progressResetStatusLabel = MenuUiFactory.CreateLabel(
+                string.Empty,
+                "progress-reset-status");
+            _progressResetStatusLabel.style.display = DisplayStyle.None;
+            panel.Add(_progressResetStatusLabel);
+
             Button backButton = MenuUiFactory.CreateButton("BACK", HideSettings, "settings-back-button");
             backButton.AddToClassList("settings-back-button");
             panel.Add(backButton);
@@ -165,6 +191,28 @@ namespace FiveNightsAtLidl.UI
         private void StartDemo()
         {
             SceneManager.LoadScene(DemoSceneName);
+        }
+
+        private void ResetNightProgress()
+        {
+            MenuPreferences.ResetNightProgress();
+            RefreshNightProgressUi();
+            _progressResetStatusLabel.text = "Progress reset. Night 1 is ready.";
+            _progressResetStatusLabel.style.display = DisplayStyle.Flex;
+        }
+
+        private void RefreshNightProgressUi()
+        {
+            int currentNight = MenuPreferences.CurrentNight;
+            _currentNightLabel.text = $"CURRENT NIGHT  {currentNight}";
+            _startButton.text = $"START NIGHT {currentNight}";
+
+            Label progressDescription = _settingsOverlay?.Q<Label>(
+                className: "night-progress-description");
+            if (progressDescription != null)
+            {
+                progressDescription.text = $"Currently on Night {currentNight}.";
+            }
         }
 
         private static void QuitGame()

@@ -47,7 +47,8 @@ track one hostile character, operate two doors and two corresponding lights, and
 manage a finite battery supply.
 
 The player wins when the clock reaches 6 AM. The player loses if the character
-successfully enters the office and completes its attack.
+successfully enters the office and completes its attack, including Bolojan's
+power-out attack after the battery reaches zero.
 
 The demo must be understandable and completable without developer assistance. It
 may use placeholder media during development, but its mechanics must form one
@@ -57,7 +58,8 @@ complete playable loop.
 
 ### Included
 
-- A title screen with Start Demo, basic volume controls, and Quit.
+- A title screen showing the current night, with Start Night, basic volume
+  controls, night-progress reset, and Quit.
 - One playable night from 12 AM to 6 AM.
 - One office/control-room view.
 - A left door and a right door.
@@ -77,7 +79,9 @@ complete playable loop.
 ### Explicitly excluded from the first demo
 
 - Additional characters.
-- Additional nights.
+- Distinct mechanics, balance, or content for additional nights. Completing a
+  shift currently advances a persistent night counter while replaying the same
+  implemented shift.
 - Difficulty selection or custom-night mode.
 - Large story sequences or extensive voice acting.
 - Achievements, cloud saves, or online features.
@@ -183,7 +187,7 @@ Cream, Checkouts, Stockroom, and Employee Room stills with restrained slow pan,
 brightness flicker, and a moving scan bar. Left and right
 door/light controls toggle their respective generated office states. A closed
 door visually takes priority over an active light on the same side. Additional
-power drain for doors and lights is not yet connected.
+power drain for doors and lights is connected.
 
 The open left side leads into the supermarket checkout section. When its light
 is active, ruined checkout lanes, abandoned equipment, and a heavily decayed
@@ -239,14 +243,15 @@ character's timing and required camera-check frequency are implemented.
 
 When the battery reaches zero:
 
-1. Doors can no longer remain closed.
-2. Lights and camera controls stop functioning.
-3. The office enters a powerless state with appropriate visual/audio feedback.
-4. The player faces a short, uncertain delay before the character can attack.
-5. Reaching 6 AM during this sequence still counts as a victory.
-
-Exact power-out timing and presentation: `TODO after the character and tone are
-defined.`
+1. Both doors are forced open and both doorway lights switch off.
+2. Door, light, and camera buttons are disabled for the rest of the shift.
+3. A heavy black overlay dims the office, with a faint unstable flicker.
+4. Once per second, Bolojan gets a new attack roll. The chance starts at 10%
+   after the first second and increases by 10 percentage points on each
+   following roll, capped at 100%.
+5. A successful roll triggers the Bolojan jumpscare with **ELECTRICITY WASTED**
+   as its only message, then ends the shift as a loss.
+6. Reaching 6 AM during this sequence still counts as a victory.
 
 ## 8. Clock and night pacing
 
@@ -340,20 +345,27 @@ behavior description takes precedence.
 
 - Trigger: the clock reaches 6 AM.
 - Player controls are disabled.
-- A short 6 AM transition plays.
-- The result screen offers return to menu or replay.
-- Final visual/audio concept: `TODO`
+- A **SHIFT ENDED** result screen confirms the completed night and says,
+  "See you around for Night N."
+- The completed night advances the persistent current-night value.
+- The result screen offers starting the next night or returning to the menu.
 
 ### Loss
 
-- Trigger: the character completes its attack condition.
+- Trigger: the character completes its attack condition. The currently
+  implemented fatal condition is Bolojan's successful power-out roll.
 - Player controls are disabled.
 - A short scare/attack sequence plays.
-- The result screen offers retry or return to menu.
-- Final visual/audio concept: `TODO`
+- A power-out loss uses **ELECTRICITY WASTED** during the jumpscare and on the
+  result screen.
+- The result screen offers retrying the current night or returning to the menu.
 
 The demo must also handle quitting or returning to the menu without being treated
 as a win or loss.
+
+Night progress is stored locally with the other menu preferences. The main menu
+always displays the current night, and Settings includes **RESET TO NIGHT 1** for
+starting the progression again.
 
 ## 11. Required media inventory
 

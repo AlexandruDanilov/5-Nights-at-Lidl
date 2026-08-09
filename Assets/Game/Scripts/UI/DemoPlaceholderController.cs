@@ -29,6 +29,10 @@ namespace FiveNightsAtLidl.UI
         private const float DefaultBolojanBatteryTaxPercent = 20f;
         private const float BolojanTaxTextStartSeconds = 0.12f;
         private const float BolojanTaxTextEndSeconds = 1.2f;
+        private const float PowerFailureRollIntervalSeconds = 1f;
+        private const float PowerFailureChanceStep = 0.1f;
+        private const string BolojanTaxMessage = "BOLOJAN TAX";
+        private const string ElectricityWastedMessage = "ELECTRICITY WASTED";
 
         [SerializeField, Min(1)]
         private int _nightNumber = 1;
@@ -111,17 +115,23 @@ namespace FiveNightsAtLidl.UI
         private VisualElement _cameraFlickerOverlay;
         private VisualElement _cameraScanBar;
         private VisualElement _bolojanJumpscareOverlay;
+        private VisualElement _powerFailureDimOverlay;
+        private VisualElement _resultOverlay;
         private Image _leftOfficeStateImage;
         private Image _rightOfficeStateImage;
         private Image _cameraFeedImage;
         private Image _bolojanCameraImage;
         private Image _bolojanJumpscareImage;
-        private Label _bolojanTaxLabel;
+        private Label _bolojanJumpscareMessageLabel;
+        private Label _resultTitleLabel;
+        private Label _resultMessageLabel;
         private Button _leftLightButton;
         private Button _rightLightButton;
         private Button _leftDoorButton;
         private Button _rightDoorButton;
         private Button _selectedCameraButton;
+        private Button _cameraToggleButton;
+        private Button _resultPrimaryButton;
         private float _elapsedNightSeconds;
         private float _batteryRemaining;
         private float _nextCameraFeedFlickerAt;
@@ -131,6 +141,9 @@ namespace FiveNightsAtLidl.UI
         private float _bolojanJumpscareElapsed;
         private float _bolojanCameraBaseLeft;
         private float _bolojanCameraBaseTop;
+        private float _powerFailureElapsed;
+        private float _nextPowerFailureRollAt;
+        private int _powerFailureRollCount;
         private int _displayedHour = -1;
         private int _displayedBatteryPercent = -1;
         private bool _leftLightOn;
@@ -143,6 +156,9 @@ namespace FiveNightsAtLidl.UI
         private bool _nightEnded;
         private bool _bolojanVisible;
         private bool _bolojanJumpscareActive;
+        private bool _bolojanJumpscareEndsNight;
+        private bool _powerFailureActive;
+        private bool _resultWasVictory;
         private string _activeCameraId = BolojanCameraOneId;
         private readonly HashSet<string> _roomsOccupiedByOtherThreats = new HashSet<string>();
 
@@ -153,6 +169,7 @@ namespace FiveNightsAtLidl.UI
                 return;
             }
 
+            _nightNumber = MenuPreferences.CurrentNight;
             _elapsedNightSeconds = 0f;
             _batteryRemaining = StartingBatteryPercent;
             _displayedBatteryPercent = -1;
@@ -166,8 +183,14 @@ namespace FiveNightsAtLidl.UI
             _nightEnded = false;
             _bolojanVisible = false;
             _bolojanJumpscareActive = false;
+            _bolojanJumpscareEndsNight = false;
+            _powerFailureActive = false;
+            _resultWasVictory = false;
             _bolojanExposureElapsed = 0f;
             _bolojanJumpscareElapsed = 0f;
+            _powerFailureElapsed = 0f;
+            _nextPowerFailureRollAt = PowerFailureRollIntervalSeconds;
+            _powerFailureRollCount = 0;
             _activeCameraId = BolojanCameraOneId;
             _roomsOccupiedByOtherThreats.Clear();
             _preNightTitleRemaining = PreNightTitleDurationSeconds;
@@ -218,27 +241,29 @@ namespace FiveNightsAtLidl.UI
                 return;
             }
 
-            AnimateCameraFeed();
-
-            if (_displayedHour >= FinalHour)
-            {
-                DismissBolojan();
-                return;
-            }
-
             float elapsedSeconds = Time.deltaTime;
-            UpdateBolojanThreat(elapsedSeconds);
-            if (_nightEnded)
-            {
-                return;
-            }
-
+            AnimateCameraFeed();
             _elapsedNightSeconds += elapsedSeconds;
             UpdateClock(force: false);
-            if (_displayedHour < FinalHour)
+            if (_displayedHour >= FinalHour)
             {
-                DrainBattery(elapsedSeconds);
+                CompleteNight();
+                return;
             }
+
+            if (_powerFailureActive)
+            {
+                UpdatePowerFailure(elapsedSeconds);
+                return;
+            }
+
+            UpdateBolojanThreat(elapsedSeconds);
+            if (_bolojanJumpscareActive || _nightEnded)
+            {
+                return;
+            }
+
+            DrainBattery(elapsedSeconds);
         }
 
         private void BuildInterface()
@@ -288,6 +313,7 @@ namespace FiveNightsAtLidl.UI
             }
 
             BuildOfficeStateLayer(root);
+            BuildPowerFailureDimOverlay(root);
             BuildOfficeControls(root);
 
             VisualElement hud = new VisualElement();
@@ -308,6 +334,7 @@ namespace FiveNightsAtLidl.UI
             batteryHud.BringToFront();
             BuildNightIntro(root);
             BuildBolojanJumpscare(root);
+            BuildResultOverlay(root);
             root.schedule.Execute(root.Focus);
         }
 
@@ -331,6 +358,15 @@ namespace FiveNightsAtLidl.UI
             }
         }
 
+        private void BuildPowerFailureDimOverlay(VisualElement root)
+        {
+            _powerFailureDimOverlay = new VisualElement { name = "power-failure-dim" };
+            _powerFailureDimOverlay.pickingMode = PickingMode.Ignore;
+            _powerFailureDimOverlay.AddToClassList("power-failure-dim");
+            _powerFailureDimOverlay.style.display = DisplayStyle.None;
+            root.Insert(2, _powerFailureDimOverlay);
+        }
+
         private void BuildBolojanJumpscare(VisualElement root)
         {
             _bolojanJumpscareOverlay = new VisualElement { name = "bolojan-jumpscare-overlay" };
@@ -347,13 +383,44 @@ namespace FiveNightsAtLidl.UI
             _bolojanJumpscareImage.AddToClassList("bolojan-jumpscare-image");
             _bolojanJumpscareOverlay.Add(_bolojanJumpscareImage);
 
-            _bolojanTaxLabel = MenuUiFactory.CreateLabel(
-                "BOLOJAN TAX",
+            _bolojanJumpscareMessageLabel = MenuUiFactory.CreateLabel(
+                BolojanTaxMessage,
                 "bolojan-tax-flash");
-            _bolojanTaxLabel.style.display = DisplayStyle.None;
-            _bolojanJumpscareOverlay.Add(_bolojanTaxLabel);
+            _bolojanJumpscareMessageLabel.style.display = DisplayStyle.None;
+            _bolojanJumpscareOverlay.Add(_bolojanJumpscareMessageLabel);
 
             root.Add(_bolojanJumpscareOverlay);
+        }
+
+        private void BuildResultOverlay(VisualElement root)
+        {
+            _resultOverlay = new VisualElement { name = "night-result-overlay" };
+            _resultOverlay.AddToClassList("night-result-overlay");
+            _resultOverlay.style.display = DisplayStyle.None;
+
+            VisualElement panel = new VisualElement { name = "night-result-panel" };
+            panel.AddToClassList("night-result-panel");
+            _resultTitleLabel = MenuUiFactory.CreateLabel(string.Empty, "night-result-title");
+            _resultMessageLabel = MenuUiFactory.CreateLabel(string.Empty, "night-result-message");
+            panel.Add(_resultTitleLabel);
+            panel.Add(_resultMessageLabel);
+
+            VisualElement actions = new VisualElement { name = "night-result-actions" };
+            actions.AddToClassList("night-result-actions");
+            _resultPrimaryButton = MenuUiFactory.CreateButton(
+                string.Empty,
+                HandleResultPrimaryAction,
+                "night-result-primary-button");
+            _resultPrimaryButton.AddToClassList("primary-button");
+            actions.Add(_resultPrimaryButton);
+            actions.Add(MenuUiFactory.CreateButton(
+                "MAIN MENU",
+                ReturnToMenu,
+                "night-result-menu-button"));
+            panel.Add(actions);
+
+            _resultOverlay.Add(panel);
+            root.Add(_resultOverlay);
         }
 
         private void BuildOfficeControls(VisualElement root)
@@ -364,14 +431,14 @@ namespace FiveNightsAtLidl.UI
             _officeControlsLayer.Add(CreateSideControls("left"));
             _officeControlsLayer.Add(CreateSideControls("right"));
 
-            Button cameraButton = new Button(ShowCameraDashboard)
+            _cameraToggleButton = new Button(ShowCameraDashboard)
             {
                 name = "raise-camera-button",
                 text = "OPEN CAMERAS",
                 tooltip = "Raise the camera monitor"
             };
-            cameraButton.AddToClassList("camera-toggle-button");
-            _officeControlsLayer.Add(cameraButton);
+            _cameraToggleButton.AddToClassList("camera-toggle-button");
+            _officeControlsLayer.Add(_cameraToggleButton);
 
             root.Add(_officeControlsLayer);
         }
@@ -465,6 +532,11 @@ namespace FiveNightsAtLidl.UI
 
         private void ToggleLight(bool isLeft)
         {
+            if (_powerFailureActive || _nightEnded)
+            {
+                return;
+            }
+
             if (isLeft)
             {
                 _leftLightOn = !_leftLightOn;
@@ -502,18 +574,28 @@ namespace FiveNightsAtLidl.UI
 
         private void ToggleDoor(bool isLeft)
         {
+            if (_powerFailureActive || _nightEnded)
+            {
+                return;
+            }
+
             if (isLeft)
             {
                 _leftDoorClosed = !_leftDoorClosed;
-                _leftDoorButton.EnableInClassList("office-control-active", _leftDoorClosed);
             }
             else
             {
                 _rightDoorClosed = !_rightDoorClosed;
-                _rightDoorButton.EnableInClassList("office-control-active", _rightDoorClosed);
             }
 
+            RefreshDoorButtonStates();
             UpdateOfficeVisualState();
+        }
+
+        private void RefreshDoorButtonStates()
+        {
+            _leftDoorButton?.EnableInClassList("office-control-active", _leftDoorClosed);
+            _rightDoorButton?.EnableInClassList("office-control-active", _rightDoorClosed);
         }
 
         private void UpdateOfficeVisualState()
@@ -862,7 +944,7 @@ namespace FiveNightsAtLidl.UI
 
         private void ShowCameraDashboard()
         {
-            if (_nightEnded)
+            if (_nightEnded || _powerFailureActive)
             {
                 return;
             }
@@ -952,7 +1034,7 @@ namespace FiveNightsAtLidl.UI
             _bolojanExposureElapsed += elapsedSeconds;
             if (_bolojanExposureElapsed >= _bolojanExposureSeconds)
             {
-                TriggerBolojanJumpscare();
+                TriggerBolojanTaxJumpscare();
             }
         }
 
@@ -967,22 +1049,47 @@ namespace FiveNightsAtLidl.UI
             }
         }
 
-        private void TriggerBolojanJumpscare()
+        private void TriggerBolojanTaxJumpscare()
+        {
+            TriggerBolojanJumpscare(
+                BolojanTaxMessage,
+                endsNight: false,
+                appliesBatteryTax: true);
+        }
+
+        private void TriggerPowerFailureJumpscare()
+        {
+            TriggerBolojanJumpscare(
+                ElectricityWastedMessage,
+                endsNight: true,
+                appliesBatteryTax: false);
+        }
+
+        private void TriggerBolojanJumpscare(
+            string message,
+            bool endsNight,
+            bool appliesBatteryTax)
         {
             DismissBolojan();
             _bolojanJumpscareActive = true;
+            _bolojanJumpscareEndsNight = endsNight;
             _bolojanJumpscareElapsed = 0f;
-            _batteryRemaining = Mathf.Max(
-                0f,
-                _batteryRemaining - _bolojanBatteryTaxPercent);
-            UpdateBatteryReadout();
+            if (appliesBatteryTax)
+            {
+                _batteryRemaining = Mathf.Max(
+                    0f,
+                    _batteryRemaining - _bolojanBatteryTaxPercent);
+                UpdateBatteryReadout();
+            }
+
             _cameraDashboardOpen = false;
             _cameraDashboard.style.display = DisplayStyle.None;
             _officeControlsLayer.style.display = DisplayStyle.None;
 
             _bolojanJumpscareImage.image = _bolojanJumpscareTexture;
             _bolojanJumpscareImage.style.display = DisplayStyle.Flex;
-            _bolojanTaxLabel.style.display = DisplayStyle.None;
+            _bolojanJumpscareMessageLabel.text = message;
+            _bolojanJumpscareMessageLabel.style.display = DisplayStyle.None;
             _bolojanJumpscareOverlay.style.display = DisplayStyle.Flex;
             _bolojanJumpscareOverlay.BringToFront();
         }
@@ -995,9 +1102,9 @@ namespace FiveNightsAtLidl.UI
             }
 
             _bolojanJumpscareElapsed += elapsedSeconds;
-            bool showTaxText = _bolojanJumpscareElapsed >= BolojanTaxTextStartSeconds &&
+            bool showMessage = _bolojanJumpscareElapsed >= BolojanTaxTextStartSeconds &&
                 _bolojanJumpscareElapsed <= BolojanTaxTextEndSeconds;
-            _bolojanTaxLabel.style.display = showTaxText
+            _bolojanJumpscareMessageLabel.style.display = showMessage
                 ? DisplayStyle.Flex
                 : DisplayStyle.None;
 
@@ -1022,12 +1129,138 @@ namespace FiveNightsAtLidl.UI
 
             _bolojanJumpscareActive = false;
             _bolojanJumpscareImage.style.display = DisplayStyle.None;
-            _bolojanTaxLabel.style.display = DisplayStyle.None;
+            _bolojanJumpscareMessageLabel.style.display = DisplayStyle.None;
             _bolojanJumpscareOverlay.style.display = DisplayStyle.None;
+
+            if (_bolojanJumpscareEndsNight)
+            {
+                _bolojanJumpscareEndsNight = false;
+                _powerFailureActive = false;
+                _nightEnded = true;
+                ShowResultOverlay(victory: false);
+                return;
+            }
+
+            if (_batteryRemaining <= 0f)
+            {
+                EnterPowerFailure();
+                return;
+            }
+
             _officeControlsLayer.style.display = DisplayStyle.Flex;
             _officeControlsLayer.BringToFront();
             _clockLabel.parent.BringToFront();
             _batteryLabel.parent.BringToFront();
+        }
+
+        private void EnterPowerFailure()
+        {
+            if (_powerFailureActive || _nightEnded)
+            {
+                return;
+            }
+
+            _powerFailureActive = true;
+            _powerFailureElapsed = 0f;
+            _nextPowerFailureRollAt = PowerFailureRollIntervalSeconds;
+            _powerFailureRollCount = 0;
+            DismissBolojan();
+
+            _cameraDashboardOpen = false;
+            _cameraDashboard.style.display = DisplayStyle.None;
+            _leftLightOn = false;
+            _rightLightOn = false;
+            _leftDoorClosed = false;
+            _rightDoorClosed = false;
+            RefreshLightButtonStates();
+            RefreshDoorButtonStates();
+            UpdateOfficeVisualState();
+
+            SetOfficeControlsEnabled(false);
+            _officeControlsLayer.style.display = DisplayStyle.Flex;
+            _powerFailureDimOverlay.style.opacity = 0.82f;
+            _powerFailureDimOverlay.style.display = DisplayStyle.Flex;
+        }
+
+        private void UpdatePowerFailure(float elapsedSeconds)
+        {
+            _powerFailureElapsed += elapsedSeconds;
+            float flicker = Mathf.PerlinNoise(Time.unscaledTime * 3.2f, 0.71f);
+            _powerFailureDimOverlay.style.opacity = 0.78f + flicker * 0.1f;
+
+            while (_powerFailureElapsed >= _nextPowerFailureRollAt)
+            {
+                _powerFailureRollCount++;
+                float attackChance = Mathf.Clamp01(
+                    _powerFailureRollCount * PowerFailureChanceStep);
+                _nextPowerFailureRollAt += PowerFailureRollIntervalSeconds;
+                if (Random.value < attackChance)
+                {
+                    TriggerPowerFailureJumpscare();
+                    return;
+                }
+            }
+        }
+
+        private void SetOfficeControlsEnabled(bool enabled)
+        {
+            _leftDoorButton?.SetEnabled(enabled);
+            _rightDoorButton?.SetEnabled(enabled);
+            _leftLightButton?.SetEnabled(enabled);
+            _rightLightButton?.SetEnabled(enabled);
+            _cameraToggleButton?.SetEnabled(enabled);
+        }
+
+        private void CompleteNight()
+        {
+            if (_nightEnded)
+            {
+                return;
+            }
+
+            _nightEnded = true;
+            _powerFailureActive = false;
+            DismissBolojan();
+            _cameraDashboardOpen = false;
+            _cameraDashboard.style.display = DisplayStyle.None;
+            SetOfficeControlsEnabled(false);
+            MenuPreferences.CompleteNight(_nightNumber);
+            ShowResultOverlay(victory: true);
+        }
+
+        private void ShowResultOverlay(bool victory)
+        {
+            _resultWasVictory = victory;
+            _resultTitleLabel.EnableInClassList("night-result-loss-title", !victory);
+            if (victory)
+            {
+                int nextNight = MenuPreferences.CurrentNight;
+                _resultTitleLabel.text = "SHIFT ENDED";
+                _resultMessageLabel.text =
+                    $"Night {_nightNumber} complete.\nSee you around for Night {nextNight}.";
+                _resultPrimaryButton.text = $"START NIGHT {nextNight}";
+            }
+            else
+            {
+                _resultTitleLabel.text = ElectricityWastedMessage;
+                _resultMessageLabel.text =
+                    $"Night {_nightNumber} ended in darkness.";
+                _resultPrimaryButton.text = $"RETRY NIGHT {_nightNumber}";
+            }
+
+            _resultOverlay.style.display = DisplayStyle.Flex;
+            _resultOverlay.BringToFront();
+            _resultPrimaryButton.schedule.Execute(_resultPrimaryButton.Focus);
+        }
+
+        private void HandleResultPrimaryAction()
+        {
+            if (_resultWasVictory)
+            {
+                MenuPreferences.Save();
+            }
+
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
         public void SetOtherThreatRoomOccupied(string cameraId, bool occupied)
@@ -1109,6 +1342,7 @@ namespace FiveNightsAtLidl.UI
         {
             if (_batteryRemaining <= 0f)
             {
+                EnterPowerFailure();
                 return;
             }
 
@@ -1136,6 +1370,10 @@ namespace FiveNightsAtLidl.UI
                 0f,
                 _batteryRemaining - drainPerSecond * elapsedSeconds);
             UpdateBatteryReadout();
+            if (_batteryRemaining <= 0f)
+            {
+                EnterPowerFailure();
+            }
         }
 
         private void UpdateBatteryReadout()

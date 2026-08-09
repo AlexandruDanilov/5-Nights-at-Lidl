@@ -141,6 +141,13 @@
     letter-spacing: 1px;
 }
 
+.current-night-label {
+    margin-top: 18px;
+    color: rgb(90, 139, 157);
+    font-size: 18px;
+    letter-spacing: 3px;
+}
+
 .menu-actions {
     width: 370px;
 }
@@ -209,8 +216,8 @@
 }
 
 .settings-panel {
-    width: 560px;
-    min-height: 440px;
+    width: 580px;
+    min-height: 620px;
     padding: 46px;
     background-color: rgb(4, 13, 19);
     border-left-width: 2px;
@@ -245,7 +252,37 @@
 }
 
 .settings-back-button {
-    margin-top: 30px;
+    margin-top: 20px;
+}
+
+.settings-section-label {
+    margin-top: 8px;
+    margin-bottom: 8px;
+    color: rgb(78, 120, 137);
+    font-size: 16px;
+    letter-spacing: 2px;
+}
+
+.night-progress-description {
+    margin-bottom: 12px;
+    color: rgb(54, 87, 100);
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.reset-progress-button {
+    height: 46px;
+    margin-bottom: 4px;
+    color: rgb(145, 82, 77);
+    font-size: 16px;
+}
+
+.progress-reset-status {
+    height: 26px;
+    margin-bottom: 4px;
+    color: rgb(113, 151, 122);
+    font-size: 12px;
+    letter-spacing: 1px;
 }
 
 .night-intro-overlay {
@@ -398,6 +435,16 @@
     background-color: rgb(6, 9, 10);
 }
 
+.office-control-button:disabled,
+.camera-toggle-button:disabled {
+    opacity: 0.28;
+    color: rgb(51, 57, 59);
+    border-left-color: rgb(37, 40, 41);
+    border-right-color: rgb(27, 30, 31);
+    border-top-color: rgb(27, 30, 31);
+    border-bottom-color: rgb(18, 20, 21);
+}
+
 .door-control-button.office-control-active {
     background-color: rgb(62, 19, 21);
     border-left-color: rgb(203, 62, 65);
@@ -448,6 +495,16 @@
 
 .camera-toggle-button:active {
     translate: -210px 2px;
+}
+
+.power-failure-dim {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgb(0, 0, 0);
+    opacity: 0.82;
 }
 
 .camera-dashboard {
@@ -712,6 +769,66 @@
     -unity-text-align: upper-center;
     -unity-text-outline-width: 4px;
     -unity-text-outline-color: rgb(24, 0, 0);
+}
+
+.night-result-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 2, 4, 0.97);
+}
+
+.night-result-panel {
+    width: 720px;
+    min-height: 390px;
+    padding: 54px 60px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(3, 10, 14);
+    border-left-width: 2px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(73, 111, 125);
+    border-right-color: rgb(25, 43, 50);
+    border-top-color: rgb(25, 43, 50);
+    border-bottom-color: rgb(25, 43, 50);
+}
+
+.night-result-title {
+    margin-bottom: 26px;
+    color: rgb(213, 220, 222);
+    font-size: 54px;
+    letter-spacing: 5px;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgb(20, 25, 27);
+}
+
+.night-result-loss-title {
+    color: rgb(199, 58, 56);
+    font-size: 42px;
+    letter-spacing: 3px;
+    -unity-text-outline-color: rgb(35, 3, 3);
+}
+
+.night-result-message {
+    min-height: 72px;
+    margin-bottom: 34px;
+    color: rgb(92, 128, 141);
+    font-size: 18px;
+    letter-spacing: 1px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}
+
+.night-result-actions {
+    width: 370px;
+    align-items: center;
 }
 
 .power-readout {

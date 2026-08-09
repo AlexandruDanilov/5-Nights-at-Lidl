@@ -10,6 +10,7 @@ namespace FiveNightsAtLidl.UI
     {
         private const string MasterVolumeKey = "settings.master_volume";
         private const string FullscreenKey = "settings.fullscreen";
+        private const string CurrentNightKey = "progress.current_night";
 
         public static float MasterVolume
         {
@@ -30,6 +31,24 @@ namespace FiveNightsAtLidl.UI
                 Screen.fullScreen = value;
                 PlayerPrefs.SetInt(FullscreenKey, value ? 1 : 0);
             }
+        }
+
+        public static int CurrentNight
+        {
+            get => Mathf.Max(1, PlayerPrefs.GetInt(CurrentNightKey, 1));
+            private set => PlayerPrefs.SetInt(CurrentNightKey, Mathf.Max(1, value));
+        }
+
+        public static void CompleteNight(int completedNight)
+        {
+            CurrentNight = Mathf.Max(CurrentNight, completedNight + 1);
+            Save();
+        }
+
+        public static void ResetNightProgress()
+        {
+            CurrentNight = 1;
+            Save();
         }
 
         public static void Apply()
