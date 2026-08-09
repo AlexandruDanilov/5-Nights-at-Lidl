@@ -286,6 +286,29 @@ is a tense but consistently understandable demo, not extreme difficulty.
 - What causes the player to lose: `TODO`
 - How its aggression changes during the night: `TODO`
 
+### Implemented threat 01: Bolojan
+
+- Bolojan can appear only when the player enters **CAM 01** or **CAM 07**.
+- Each eligible camera entry makes one independent appearance roll. The initial
+  chance is **10%** and is exposed as `_bolojanAppearanceChance` on the gameplay
+  controller so it can be rebalanced without changing the behavior code.
+- He cannot appear while another threat occupies that room. Other threats can
+  report occupancy through `SetOtherThreatRoomOccupied`; entering an occupied
+  room also dismisses Bolojan immediately.
+- His CAM 01 and CAM 07 appearances use separate full-room camera composites so
+  his perspective, lighting, shadows, grain, and color treatment belong to each
+  surveillance feed. The feed retains subtle per-frame drift and flicker.
+- Changing cameras or closing the monitor makes him disappear and clears the
+  exposure timer.
+- Looking at him continuously for **2 seconds** triggers a silent office
+  jumpscare. The image shakes at a contained full-screen scale and **BOLOJAN
+  TAX** is the only message shown.
+- The tax removes exactly **20 percentage points** from the current battery,
+  clamped at zero. It does not end the night; after the short scare, the player
+  returns to the office and continues playing.
+- The gameplay camera dashboard exposes no threat-specific testing controls;
+  appearances always use the configured random chance.
+
 ### Technical starting model
 
 Unless the final design calls for something different, the first implementation

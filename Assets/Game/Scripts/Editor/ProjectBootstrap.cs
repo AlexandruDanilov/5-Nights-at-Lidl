@@ -20,15 +20,15 @@ namespace FiveNightsAtLidl.Editor
         private const string RuntimeThemePath = "Assets/Game/UI/RuntimeTheme.tss";
         private const string MenuVideoPath = "Assets/Game/Art/UI/menu_screen_loop_runtime.m4v";
         private const string OfficeBackgroundPath =
-            "Assets/Game/Art/Backgrounds/OfficeDarkHallways.png";
+            "Assets/Game/Art/Backgrounds/OfficeBaseGenerated_v3.png";
         private const string OfficeLeftLightPath =
-            "Assets/Game/Art/Backgrounds/OfficeLightLeftCheckout.png";
+            "Assets/Game/Art/Backgrounds/OfficeLightLeftGenerated_v3.png";
         private const string OfficeRightLightPath =
-            "Assets/Game/Art/Backgrounds/OfficeLightRightEmployeeStockroom.png";
+            "Assets/Game/Art/Backgrounds/OfficeLightRightGenerated_v3.png";
         private const string OfficeLeftDoorPath =
-            "Assets/Game/Art/Backgrounds/OfficeDoorLeft.png";
+            "Assets/Game/Art/Backgrounds/OfficeDoorLeftGenerated_v3.png";
         private const string OfficeRightDoorPath =
-            "Assets/Game/Art/Backgrounds/OfficeDoorRight.png";
+            "Assets/Game/Art/Backgrounds/OfficeDoorRightGenerated_v3.png";
         private const string DairyCameraFeedPath =
             "Assets/Game/Art/CameraFeeds/Cam01_Dairy.png";
         private const string BakeryCameraFeedPath =
@@ -45,6 +45,12 @@ namespace FiveNightsAtLidl.Editor
             "Assets/Game/Art/CameraFeeds/Cam07_Stockroom.png";
         private const string EmployeeRoomCameraFeedPath =
             "Assets/Game/Art/CameraFeeds/Cam08_EmployeeRoom.png";
+        private const string BolojanCameraOnePath =
+            "Assets/Game/Art/Characters/Bolojan/Bolojan_Cam01_Integrated.png";
+        private const string BolojanCameraSevenPath =
+            "Assets/Game/Art/Characters/Bolojan/Bolojan_Cam07_Integrated.png";
+        private const string BolojanJumpscarePath =
+            "Assets/Game/Art/Characters/Bolojan/Bolojan_Jumpscare.png";
         private const string MenuRenderTexturePath = "Assets/Game/Settings/MenuBackground.renderTexture";
         private const string MacBuildPath = "Builds/macOS/FiveNightsAtLidl.app";
 
@@ -74,6 +80,9 @@ namespace FiveNightsAtLidl.Editor
             Texture2D checkoutsCameraFeed = LoadRequiredTexture(CheckoutsCameraFeedPath);
             Texture2D stockroomCameraFeed = LoadRequiredTexture(StockroomCameraFeedPath);
             Texture2D employeeRoomCameraFeed = LoadRequiredTexture(EmployeeRoomCameraFeedPath);
+            Texture2D bolojanCameraOne = LoadRequiredTexture(BolojanCameraOnePath);
+            Texture2D bolojanCameraSeven = LoadRequiredTexture(BolojanCameraSevenPath);
+            Texture2D bolojanJumpscare = LoadRequiredTexture(BolojanJumpscarePath);
 
             RenderTexture menuRenderTexture = CreateOrUpdateMenuRenderTexture();
             CreateMainMenuScene(panelSettings, menuVideo, menuRenderTexture);
@@ -91,7 +100,10 @@ namespace FiveNightsAtLidl.Editor
                 iceCreamCameraFeed,
                 checkoutsCameraFeed,
                 stockroomCameraFeed,
-                employeeRoomCameraFeed);
+                employeeRoomCameraFeed,
+                bolojanCameraOne,
+                bolojanCameraSeven,
+                bolojanJumpscare);
             ConfigureBuildScenes();
             ConfigurePlayerSettings();
 
@@ -192,7 +204,10 @@ namespace FiveNightsAtLidl.Editor
             Texture2D iceCreamCameraFeed,
             Texture2D checkoutsCameraFeed,
             Texture2D stockroomCameraFeed,
-            Texture2D employeeRoomCameraFeed)
+            Texture2D employeeRoomCameraFeed,
+            Texture2D bolojanCameraOne,
+            Texture2D bolojanCameraSeven,
+            Texture2D bolojanJumpscare)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             CreatePresentationCamera();
@@ -215,7 +230,10 @@ namespace FiveNightsAtLidl.Editor
                 iceCreamCameraFeed,
                 checkoutsCameraFeed,
                 stockroomCameraFeed,
-                employeeRoomCameraFeed);
+                employeeRoomCameraFeed,
+                bolojanCameraOne,
+                bolojanCameraSeven,
+                bolojanJumpscare);
 
             EditorSceneManager.SaveScene(scene, DemoScenePath);
         }
