@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &696211842
+--- !u!1 &302293633
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,9 +127,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 696211845}
-  - component: {fileID: 696211844}
-  - component: {fileID: 696211843}
+  - component: {fileID: 302293636}
+  - component: {fileID: 302293635}
+  - component: {fileID: 302293634}
   m_Layer: 0
   m_Name: Main Gameplay
   m_TagString: Untagged
@@ -137,17 +137,17 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &696211843
+--- !u!114 &302293634
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 696211842}
+  m_GameObject: {fileID: 302293633}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 261d4760e95a248cdb89059c5a633c81, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: FiveNightsAtLidl.Runtime::FiveNightsAtLidl.UI.DemoPlaceholderController
   _nightNumber: 1
   _fallbackPanelSettings: {fileID: 11400000, guid: 2bd33264763d74462a7c9201ea703d46, type: 2}
@@ -171,19 +171,40 @@ MonoBehaviour:
   _bolojanExposureSeconds: 2
   _bolojanJumpscareDurationSeconds: 1.35
   _bolojanBatteryTaxPercent: 20
---- !u!114 &696211844
+  _sellyCameraFourTexture: {fileID: 2800000, guid: 9de342d0107684b799fcf9844a4fcb3b, type: 3}
+  _sellyCameraFiveTexture: {fileID: 2800000, guid: 11655804600c74d008bc135a07cd8eb0, type: 3}
+  _sellyCameraSevenTexture: {fileID: 2800000, guid: ca2873f7bd805467da400d1b59dd4925, type: 3}
+  _sellyCameraEightTexture: {fileID: 2800000, guid: ddf582adac01f4f7fb344a67cded6e03, type: 3}
+  _sellyRightDoorTexture: {fileID: 2800000, guid: 3690a340cf0a64d0ab6fd311012cd60c, type: 3}
+  _sellyJumpscareTexture: {fileID: 2800000, guid: 99253e275f6c64f5cbf066c765497d1c, type: 3}
+  _sellyMovementOpportunitySeconds: 4.97
+  _sellyOpenDoorAttackSeconds: 5
+  _sellyMinimumRetreatDelaySeconds: 2
+  _sellyMaximumRetreatDelaySeconds: 5
+  _sellyAiOverride: -1
+  _cabralCameraOneTexture: {fileID: 2800000, guid: ffcfadda8c2341c999947f6c3515488c, type: 3}
+  _cabralCameraTwoTexture: {fileID: 2800000, guid: 78102afbf8a14184923fe185220b9793, type: 3}
+  _cabralCameraSixTexture: {fileID: 2800000, guid: b09d6155c4ef41778920c9e2a7051710, type: 3}
+  _cabralLeftDoorTexture: {fileID: 2800000, guid: 3ba5a4f77b7941619847c02bf434d53c, type: 3}
+  _cabralJumpscareTexture: {fileID: 2800000, guid: 767918e7f3294b9c91d3d0753574c371, type: 3}
+  _cabralMovementOpportunitySeconds: 4.98
+  _cabralOpenDoorAttackSeconds: 5
+  _cabralMinimumRetreatDelaySeconds: 2
+  _cabralMaximumRetreatDelaySeconds: 5
+  _cabralAiOverride: -1
+--- !u!114 &302293635
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 696211842}
+  m_GameObject: {fileID: 302293633}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
-  m_PanelSettings: {fileID: 0}
+  m_PanelSettings: {fileID: 11400000, guid: 2bd33264763d74462a7c9201ea703d46, type: 2}
   m_ParentUI: {fileID: 0}
   sourceAsset: {fileID: 0}
   m_SortingOrder: 0
@@ -194,13 +215,13 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!4 &696211845
+--- !u!4 &302293636
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 696211842}
+  m_GameObject: {fileID: 302293633}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -209,7 +230,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1132271523
+--- !u!1 &1072241810
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -217,9 +238,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1132271526}
-  - component: {fileID: 1132271525}
-  - component: {fileID: 1132271524}
+  - component: {fileID: 1072241813}
+  - component: {fileID: 1072241812}
+  - component: {fileID: 1072241811}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -227,21 +248,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1132271524
+--- !u!81 &1072241811
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1132271523}
+  m_GameObject: {fileID: 1072241810}
   m_Enabled: 1
---- !u!20 &1132271525
+--- !u!20 &1072241812
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1132271523}
+  m_GameObject: {fileID: 1072241810}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -286,13 +307,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &1132271526
+--- !u!4 &1072241813
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1132271523}
+  m_GameObject: {fileID: 1072241810}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -305,5 +326,5 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1132271526}
-  - {fileID: 696211845}
+  - {fileID: 1072241813}
+  - {fileID: 302293636}

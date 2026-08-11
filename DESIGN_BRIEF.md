@@ -166,6 +166,9 @@ Add or remove rows once the character's route is defined.
 
 - Raising the monitor consumes additional battery.
 - Switching feeds produces immediate visual and audio feedback.
+- Selecting a different camera immediately updates the selected map node and
+  camera label, then conceals the new image behind an **ACQUIRING SIGNAL** state
+  for 0.5 seconds before revealing the feed.
 - The currently selected camera is clearly identified.
 - Camera noise/static disguises image changes when appropriate.
 - The character is visible only when the current feed and its state allow it.
@@ -314,6 +317,74 @@ is a tense but consistently understandable demo, not extreme difficulty.
 - The gameplay camera dashboard exposes no threat-specific testing controls;
   appearances always use the configured random chance.
 
+### Implemented threat 02: Selly
+
+- Selly starts on **CAM 04** and follows the fixed route **CAM 04 → CAM 05 →
+  CAM 07 → CAM 08 → right office door**. Each camera location uses its own
+  full-room composite, and he disappears from every feed once he reaches the
+  office door.
+- He receives a movement opportunity every **4.97 seconds**. Each opportunity
+  rolls from 1 to 20 and succeeds when the roll is no greater than his current
+  AI level. The base AI values follow Bonnie's original progression: Night 1 =
+  0, Night 2 = 3, Night 3 = 0, Night 4 = 2, Night 5 = 5, and Night 6 = 10.
+  Later custom nights scale upward, capped at 20. Selly gains one additional AI
+  point at 2 AM, 3 AM, and 4 AM.
+- A movement opportunity is blocked while the player can actually see Selly's
+  current camera feed. The camera's signal-acquisition interval does not count
+  as observing him because its image is still concealed.
+- Every successful transition produces a light **0.35-second static burst** on
+  both the camera Selly leaves and the camera he enters. If one side of the
+  transition is the office door, the burst applies only to the connected camera
+  feed. The cue adds brief opacity noise and subtle image jitter without using
+  the full signal-acquisition overlay.
+- Selly's current camera is registered as occupied, preventing Bolojan from
+  appearing in the same room. If Selly enters CAM 07 while Bolojan is present,
+  Bolojan is dismissed.
+- At the right office door, turning on the right light reveals Selly using the
+  dedicated doorway frame. The light is informational only: leaving the right
+  door open for **5 continuous seconds** triggers Selly's fatal jumpscare even
+  when the light is off.
+- Closing the right door in his face commits Selly to a retreat after a random
+  **2–5 second** delay. He then moves back either two rooms to CAM 07 or three
+  rooms to CAM 05, chosen randomly, and resumes normal movement opportunities.
+- Selly's attack uses the same close, shaking full-screen presentation as the
+  Bolojan scare with Selly's dedicated frame, then ends the current night as a
+  loss. It does not apply a battery tax or show Bolojan's message text.
+- `_sellyAiOverride` can be set from 0–20 in the gameplay controller inspector
+  for balancing and deterministic development testing; **-1** uses the current
+  night/hour progression described above.
+
+### Implemented threat 03: Cabral
+
+- Cabral starts on **CAM 01** and follows the fixed route **CAM 01 → CAM 02 →
+  CAM 06 → left office door**. Every location uses a full-room composite; after
+  reaching the office he disappears from all camera feeds.
+- He receives a movement opportunity every **4.98 seconds**. Each opportunity
+  rolls from 1 to 20 and succeeds when the roll is no greater than his current
+  AI level. His base progression uses Chica's original values: Night 1 = 0,
+  Night 2 = 1, Night 3 = 5, Night 4 = 4, Night 5 = 7, and Night 6 = 12. Later
+  custom nights scale upward and are capped at 20. He gains one additional AI
+  point at 3 AM and another at 4 AM.
+- Unlike Selly, Cabral **can move while his current camera is being observed**.
+  A successful transition creates the same light **0.35-second static burst**
+  on both the feed he leaves and the feed he enters, making an observed move
+  readable without freezing his behavior.
+- His current room counts as occupied for Bolojan. In particular, Bolojan cannot
+  appear on CAM 01 while Cabral is there and is dismissed if Cabral enters an
+  eligible occupied room.
+- At the left office door, the left light reveals a dedicated frame in which
+  Cabral waits immediately outside, one step behind the threshold. He remains
+  broad and nearly door-height without entering the office or unnaturally
+  filling the opening. The light is informational only: leaving the left door
+  open for **5 continuous seconds** triggers the attack regardless of light state.
+- Closing the left door schedules a random **2–5 second** retreat. Cabral then
+  goes back either two route steps to CAM 02 or three steps to CAM 01, chosen
+  randomly, and resumes his normal movement opportunities.
+- His dedicated close, shaking jumpscare ends the night as a loss. It applies no
+  battery tax and displays no Bolojan tax text.
+- `_cabralAiOverride` accepts 0–20 in the gameplay-controller inspector for
+  balancing; **-1** uses the current night/hour progression above.
+
 ### Technical starting model
 
 Unless the final design calls for something different, the first implementation
@@ -352,11 +423,14 @@ behavior description takes precedence.
 
 ### Loss
 
-- Trigger: the character completes its attack condition. The currently
-  implemented fatal condition is Bolojan's successful power-out roll.
+- Trigger: the character completes its attack condition. The implemented fatal
+  conditions are Bolojan's successful power-out roll and Selly remaining at the
+  open right door for five seconds.
 - Player controls are disabled.
 - A short scare/attack sequence plays.
 - A power-out loss uses **ELECTRICITY WASTED** during the jumpscare and on the
+  result screen.
+- A Selly loss uses his dedicated jumpscare frame followed by a **SHIFT FAILED**
   result screen.
 - The result screen offers retrying the current night or returning to the menu.
 

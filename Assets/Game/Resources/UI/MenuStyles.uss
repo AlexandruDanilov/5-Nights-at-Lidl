@@ -635,6 +635,24 @@
     opacity: 0.18;
 }
 
+.camera-feed-loading-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(1, 4, 5);
+}
+
+.camera-feed-loading-label {
+    color: rgb(74, 105, 115);
+    font-size: 19px;
+    letter-spacing: 4px;
+    -unity-text-align: middle-center;
+}
+
 .camera-map {
     position: relative;
     flex-grow: 1;

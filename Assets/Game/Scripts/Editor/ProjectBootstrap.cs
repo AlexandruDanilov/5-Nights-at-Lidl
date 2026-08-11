@@ -51,6 +51,28 @@ namespace FiveNightsAtLidl.Editor
             "Assets/Game/Art/Characters/Bolojan/Bolojan_Cam07_Integrated.png";
         private const string BolojanJumpscarePath =
             "Assets/Game/Art/Characters/Bolojan/Bolojan_Jumpscare.png";
+        private const string SellyCameraFourPath =
+            "Assets/Game/Art/Characters/Selly/Selly_Cam04_Integrated.png";
+        private const string SellyCameraFivePath =
+            "Assets/Game/Art/Characters/Selly/Selly_Cam05_Integrated.png";
+        private const string SellyCameraSevenPath =
+            "Assets/Game/Art/Characters/Selly/Selly_Cam07_Integrated.png";
+        private const string SellyCameraEightPath =
+            "Assets/Game/Art/Characters/Selly/Selly_Cam08_Integrated.png";
+        private const string SellyRightDoorPath =
+            "Assets/Game/Art/Characters/Selly/Selly_RightDoor_Integrated.png";
+        private const string SellyJumpscarePath =
+            "Assets/Game/Art/Characters/Selly/Selly_Jumpscare.png";
+        private const string CabralCameraOnePath =
+            "Assets/Game/Art/Characters/Cabral/Cabral_Cam01_Integrated.png";
+        private const string CabralCameraTwoPath =
+            "Assets/Game/Art/Characters/Cabral/Cabral_Cam02_Integrated.png";
+        private const string CabralCameraSixPath =
+            "Assets/Game/Art/Characters/Cabral/Cabral_Cam06_Integrated.png";
+        private const string CabralLeftDoorPath =
+            "Assets/Game/Art/Characters/Cabral/Cabral_LeftDoor_Integrated.png";
+        private const string CabralJumpscarePath =
+            "Assets/Game/Art/Characters/Cabral/Cabral_Jumpscare.png";
         private const string MenuRenderTexturePath = "Assets/Game/Settings/MenuBackground.renderTexture";
         private const string MacBuildPath = "Builds/macOS/FiveNightsAtLidl.app";
 
@@ -83,6 +105,17 @@ namespace FiveNightsAtLidl.Editor
             Texture2D bolojanCameraOne = LoadRequiredTexture(BolojanCameraOnePath);
             Texture2D bolojanCameraSeven = LoadRequiredTexture(BolojanCameraSevenPath);
             Texture2D bolojanJumpscare = LoadRequiredTexture(BolojanJumpscarePath);
+            Texture2D sellyCameraFour = LoadRequiredTexture(SellyCameraFourPath);
+            Texture2D sellyCameraFive = LoadRequiredTexture(SellyCameraFivePath);
+            Texture2D sellyCameraSeven = LoadRequiredTexture(SellyCameraSevenPath);
+            Texture2D sellyCameraEight = LoadRequiredTexture(SellyCameraEightPath);
+            Texture2D sellyRightDoor = LoadRequiredTexture(SellyRightDoorPath);
+            Texture2D sellyJumpscare = LoadRequiredTexture(SellyJumpscarePath);
+            Texture2D cabralCameraOne = LoadRequiredTexture(CabralCameraOnePath);
+            Texture2D cabralCameraTwo = LoadRequiredTexture(CabralCameraTwoPath);
+            Texture2D cabralCameraSix = LoadRequiredTexture(CabralCameraSixPath);
+            Texture2D cabralLeftDoor = LoadRequiredTexture(CabralLeftDoorPath);
+            Texture2D cabralJumpscare = LoadRequiredTexture(CabralJumpscarePath);
 
             RenderTexture menuRenderTexture = CreateOrUpdateMenuRenderTexture();
             CreateMainMenuScene(panelSettings, menuVideo, menuRenderTexture);
@@ -103,7 +136,18 @@ namespace FiveNightsAtLidl.Editor
                 employeeRoomCameraFeed,
                 bolojanCameraOne,
                 bolojanCameraSeven,
-                bolojanJumpscare);
+                bolojanJumpscare,
+                sellyCameraFour,
+                sellyCameraFive,
+                sellyCameraSeven,
+                sellyCameraEight,
+                sellyRightDoor,
+                sellyJumpscare,
+                cabralCameraOne,
+                cabralCameraTwo,
+                cabralCameraSix,
+                cabralLeftDoor,
+                cabralJumpscare);
             ConfigureBuildScenes();
             ConfigurePlayerSettings();
 
@@ -207,7 +251,18 @@ namespace FiveNightsAtLidl.Editor
             Texture2D employeeRoomCameraFeed,
             Texture2D bolojanCameraOne,
             Texture2D bolojanCameraSeven,
-            Texture2D bolojanJumpscare)
+            Texture2D bolojanJumpscare,
+            Texture2D sellyCameraFour,
+            Texture2D sellyCameraFive,
+            Texture2D sellyCameraSeven,
+            Texture2D sellyCameraEight,
+            Texture2D sellyRightDoor,
+            Texture2D sellyJumpscare,
+            Texture2D cabralCameraOne,
+            Texture2D cabralCameraTwo,
+            Texture2D cabralCameraSix,
+            Texture2D cabralLeftDoor,
+            Texture2D cabralJumpscare)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             CreatePresentationCamera();
@@ -233,7 +288,18 @@ namespace FiveNightsAtLidl.Editor
                 employeeRoomCameraFeed,
                 bolojanCameraOne,
                 bolojanCameraSeven,
-                bolojanJumpscare);
+                bolojanJumpscare,
+                sellyCameraFour,
+                sellyCameraFive,
+                sellyCameraSeven,
+                sellyCameraEight,
+                sellyRightDoor,
+                sellyJumpscare,
+                cabralCameraOne,
+                cabralCameraTwo,
+                cabralCameraSix,
+                cabralLeftDoor,
+                cabralJumpscare);
 
             EditorSceneManager.SaveScene(scene, DemoScenePath);
         }

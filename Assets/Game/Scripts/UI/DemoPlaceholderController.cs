@@ -29,10 +29,26 @@ namespace FiveNightsAtLidl.UI
         private const float DefaultBolojanBatteryTaxPercent = 20f;
         private const float BolojanTaxTextStartSeconds = 0.12f;
         private const float BolojanTaxTextEndSeconds = 1.2f;
+        private const float CameraFeedSwitchDelaySeconds = 0.25f;
         private const float PowerFailureRollIntervalSeconds = 1f;
         private const float PowerFailureChanceStep = 0.1f;
         private const string BolojanTaxMessage = "BOLOJAN TAX";
         private const string ElectricityWastedMessage = "ELECTRICITY WASTED";
+        private const string SellyCameraFourId = "CAM 04";
+        private const string SellyCameraFiveId = "CAM 05";
+        private const string SellyCameraSevenId = "CAM 07";
+        private const string SellyCameraEightId = "CAM 08";
+        private const int SellyDoorRouteIndex = 4;
+        private const float SellyMovementStaticDurationSeconds = 0.35f;
+        private const string SellyLossTitle = "SHIFT FAILED";
+        private const string SellyLossMessage = "Selly reached the office.";
+        private const string CabralCameraOneId = "CAM 01";
+        private const string CabralCameraTwoId = "CAM 02";
+        private const string CabralCameraSixId = "CAM 06";
+        private const int CabralDoorRouteIndex = 3;
+        private const float CabralMovementStaticDurationSeconds = 0.35f;
+        private const string CabralLossTitle = "SHIFT FAILED";
+        private const string CabralLossMessage = "Cabral reached the office.";
 
         [SerializeField, Min(1)]
         private int _nightNumber = 1;
@@ -104,6 +120,77 @@ namespace FiveNightsAtLidl.UI
         [Tooltip("Battery percentage points removed when the Bolojan tax lands.")]
         private float _bolojanBatteryTaxPercent = DefaultBolojanBatteryTaxPercent;
 
+        [Header("Selly Threat")]
+        [SerializeField]
+        private Texture2D _sellyCameraFourTexture;
+
+        [SerializeField]
+        private Texture2D _sellyCameraFiveTexture;
+
+        [SerializeField]
+        private Texture2D _sellyCameraSevenTexture;
+
+        [SerializeField]
+        private Texture2D _sellyCameraEightTexture;
+
+        [SerializeField]
+        private Texture2D _sellyRightDoorTexture;
+
+        [SerializeField]
+        private Texture2D _sellyJumpscareTexture;
+
+        [SerializeField, Min(0.1f)]
+        [Tooltip("Seconds between Bonnie-style movement opportunities.")]
+        private float _sellyMovementOpportunitySeconds = 4.97f;
+
+        [SerializeField, Min(0.1f)]
+        [Tooltip("Continuous seconds at the open right door before Selly attacks.")]
+        private float _sellyOpenDoorAttackSeconds = 5f;
+
+        [SerializeField, Min(0f)]
+        private float _sellyMinimumRetreatDelaySeconds = 2f;
+
+        [SerializeField, Min(0f)]
+        private float _sellyMaximumRetreatDelaySeconds = 5f;
+
+        [SerializeField, Range(-1, 20)]
+        [Tooltip("Editor balance override. -1 uses the current night and hour.")]
+        private int _sellyAiOverride = -1;
+
+        [Header("Cabral Threat")]
+        [SerializeField]
+        private Texture2D _cabralCameraOneTexture;
+
+        [SerializeField]
+        private Texture2D _cabralCameraTwoTexture;
+
+        [SerializeField]
+        private Texture2D _cabralCameraSixTexture;
+
+        [SerializeField]
+        private Texture2D _cabralLeftDoorTexture;
+
+        [SerializeField]
+        private Texture2D _cabralJumpscareTexture;
+
+        [SerializeField, Min(0.1f)]
+        [Tooltip("Seconds between Chica-style movement opportunities.")]
+        private float _cabralMovementOpportunitySeconds = 4.98f;
+
+        [SerializeField, Min(0.1f)]
+        [Tooltip("Continuous seconds at the open left door before Cabral attacks.")]
+        private float _cabralOpenDoorAttackSeconds = 5f;
+
+        [SerializeField, Min(0f)]
+        private float _cabralMinimumRetreatDelaySeconds = 2f;
+
+        [SerializeField, Min(0f)]
+        private float _cabralMaximumRetreatDelaySeconds = 5f;
+
+        [SerializeField, Range(-1, 20)]
+        [Tooltip("Editor balance override. -1 uses Chica's current night and hour progression.")]
+        private int _cabralAiOverride = -1;
+
         private Label _clockLabel;
         private Label _batteryLabel;
         private Label _activeCameraLabel;
@@ -114,6 +201,7 @@ namespace FiveNightsAtLidl.UI
         private VisualElement _cameraFeedViewport;
         private VisualElement _cameraFlickerOverlay;
         private VisualElement _cameraScanBar;
+        private VisualElement _cameraFeedLoadingOverlay;
         private VisualElement _bolojanJumpscareOverlay;
         private VisualElement _powerFailureDimOverlay;
         private VisualElement _resultOverlay;
@@ -136,6 +224,7 @@ namespace FiveNightsAtLidl.UI
         private float _batteryRemaining;
         private float _nextCameraFeedFlickerAt;
         private float _cameraFeedFlickerUntil;
+        private float _cameraFeedRevealAt;
         private float _preNightTitleRemaining;
         private float _bolojanExposureElapsed;
         private float _bolojanJumpscareElapsed;
@@ -152,15 +241,37 @@ namespace FiveNightsAtLidl.UI
         private bool _rightDoorClosed;
         private bool _cameraDashboardOpen;
         private bool _cameraFeedActive;
+        private bool _cameraFeedLoading;
         private bool _nightStarted;
         private bool _nightEnded;
         private bool _bolojanVisible;
         private bool _bolojanJumpscareActive;
         private bool _bolojanJumpscareEndsNight;
+        private bool _jumpscareShowsMessage;
         private bool _powerFailureActive;
         private bool _resultWasVictory;
+        private bool _sellyThreatActive;
+        private bool _sellyRetreatPending;
+        private int _sellyRouteIndex;
+        private float _sellyMovementOpportunityElapsed;
+        private float _sellyDoorOpenElapsed;
+        private float _sellyRetreatElapsed;
+        private float _sellyRetreatDelay;
+        private float _sellyCameraStaticUntil;
+        private bool _cabralThreatActive;
+        private bool _cabralRetreatPending;
+        private int _cabralRouteIndex;
+        private float _cabralMovementOpportunityElapsed;
+        private float _cabralDoorOpenElapsed;
+        private float _cabralRetreatElapsed;
+        private float _cabralRetreatDelay;
+        private float _cabralCameraStaticUntil;
+        private string _lossTitle = ElectricityWastedMessage;
+        private string _lossMessage = "The shift ended in darkness.";
         private string _activeCameraId = BolojanCameraOneId;
         private readonly HashSet<string> _roomsOccupiedByOtherThreats = new HashSet<string>();
+        private readonly HashSet<string> _sellyStaticCameraIds = new HashSet<string>();
+        private readonly HashSet<string> _cabralStaticCameraIds = new HashSet<string>();
 
         private void OnEnable()
         {
@@ -179,13 +290,33 @@ namespace FiveNightsAtLidl.UI
             _rightDoorClosed = false;
             _cameraDashboardOpen = false;
             _cameraFeedActive = false;
+            _cameraFeedLoading = false;
             _nightStarted = false;
             _nightEnded = false;
             _bolojanVisible = false;
             _bolojanJumpscareActive = false;
             _bolojanJumpscareEndsNight = false;
+            _jumpscareShowsMessage = false;
             _powerFailureActive = false;
             _resultWasVictory = false;
+            _sellyThreatActive = true;
+            _sellyRetreatPending = false;
+            _sellyRouteIndex = 0;
+            _sellyMovementOpportunityElapsed = 0f;
+            _sellyDoorOpenElapsed = 0f;
+            _sellyRetreatElapsed = 0f;
+            _sellyRetreatDelay = 0f;
+            _sellyCameraStaticUntil = 0f;
+            _cabralThreatActive = true;
+            _cabralRetreatPending = false;
+            _cabralRouteIndex = 0;
+            _cabralMovementOpportunityElapsed = 0f;
+            _cabralDoorOpenElapsed = 0f;
+            _cabralRetreatElapsed = 0f;
+            _cabralRetreatDelay = 0f;
+            _cabralCameraStaticUntil = 0f;
+            _lossTitle = ElectricityWastedMessage;
+            _lossMessage = $"Night {_nightNumber} ended in darkness.";
             _bolojanExposureElapsed = 0f;
             _bolojanJumpscareElapsed = 0f;
             _powerFailureElapsed = 0f;
@@ -193,6 +324,10 @@ namespace FiveNightsAtLidl.UI
             _powerFailureRollCount = 0;
             _activeCameraId = BolojanCameraOneId;
             _roomsOccupiedByOtherThreats.Clear();
+            _roomsOccupiedByOtherThreats.Add(SellyCameraFourId);
+            _roomsOccupiedByOtherThreats.Add(CabralCameraOneId);
+            _sellyStaticCameraIds.Clear();
+            _cabralStaticCameraIds.Clear();
             _preNightTitleRemaining = PreNightTitleDurationSeconds;
             BuildInterface();
             UpdateClock(force: true);
@@ -258,6 +393,18 @@ namespace FiveNightsAtLidl.UI
             }
 
             UpdateBolojanThreat(elapsedSeconds);
+            if (_bolojanJumpscareActive || _nightEnded)
+            {
+                return;
+            }
+
+            UpdateSellyThreat(elapsedSeconds);
+            if (_bolojanJumpscareActive || _nightEnded)
+            {
+                return;
+            }
+
+            UpdateCabralThreat(elapsedSeconds);
             if (_bolojanJumpscareActive || _nightEnded)
             {
                 return;
@@ -605,12 +752,28 @@ namespace FiveNightsAtLidl.UI
                 return;
             }
 
-            Texture2D leftState = _leftDoorClosed
-                ? _leftDoorBackground
-                : _leftLightOn ? _leftLightBackground : null;
-            Texture2D rightState = _rightDoorClosed
-                ? _rightDoorBackground
-                : _rightLightOn ? _rightLightBackground : null;
+            Texture2D leftState = null;
+            if (_leftDoorClosed)
+            {
+                leftState = _leftDoorBackground;
+            }
+            else if (_leftLightOn)
+            {
+                leftState = IsCabralAtOfficeDoor() && _cabralLeftDoorTexture != null
+                    ? _cabralLeftDoorTexture
+                    : _leftLightBackground;
+            }
+            Texture2D rightState = null;
+            if (_rightDoorClosed)
+            {
+                rightState = _rightDoorBackground;
+            }
+            else if (_rightLightOn)
+            {
+                rightState = IsSellyAtOfficeDoor() && _sellyRightDoorTexture != null
+                    ? _sellyRightDoorTexture
+                    : _rightLightBackground;
+            }
 
             ApplyOfficeState(_leftOfficeStateImage, leftState);
             ApplyOfficeState(_rightOfficeStateImage, rightState);
@@ -682,6 +845,18 @@ namespace FiveNightsAtLidl.UI
             _cameraScanBar.pickingMode = PickingMode.Ignore;
             _cameraScanBar.AddToClassList("camera-feed-scan-bar");
             _cameraFeedViewport.Add(_cameraScanBar);
+
+            _cameraFeedLoadingOverlay = new VisualElement
+            {
+                name = "camera-feed-loading-overlay",
+                pickingMode = PickingMode.Ignore
+            };
+            _cameraFeedLoadingOverlay.AddToClassList("camera-feed-loading-overlay");
+            _cameraFeedLoadingOverlay.Add(MenuUiFactory.CreateLabel(
+                "ACQUIRING SIGNAL",
+                "camera-feed-loading-label"));
+            _cameraFeedLoadingOverlay.style.display = DisplayStyle.None;
+            _cameraFeedViewport.Add(_cameraFeedLoadingOverlay);
 
             feedPanel.Add(_cameraFeedViewport);
             UpdateCameraFeed("CAM 01", "DAIRY");
@@ -821,52 +996,56 @@ namespace FiveNightsAtLidl.UI
                 return;
             }
 
+            if (_selectedCameraButton == cameraButton && _activeCameraId == cameraId)
+            {
+                return;
+            }
+
             DismissBolojan();
             _selectedCameraButton?.RemoveFromClassList("camera-node-selected");
             _selectedCameraButton = cameraButton;
             _selectedCameraButton.AddToClassList("camera-node-selected");
             _activeCameraLabel.text = $"{cameraId} / {locationName}";
+            BeginCameraFeedSwitch(cameraId, locationName);
+        }
+
+        private void BeginCameraFeedSwitch(string cameraId, string locationName)
+        {
             UpdateCameraFeed(cameraId, locationName);
-            TryShowBolojan(cameraId);
+            _cameraFeedLoading = true;
+            _cameraFeedRevealAt = Time.unscaledTime + CameraFeedSwitchDelaySeconds;
+            _cameraFeedImage.style.display = DisplayStyle.None;
+            _feedPlaceholderLabel.style.display = DisplayStyle.None;
+            _cameraFeedLoadingOverlay.style.display = DisplayStyle.Flex;
+            _cameraFeedLoadingOverlay.BringToFront();
+        }
+
+        private void UpdateCameraFeedLoading()
+        {
+            if (!_cameraFeedLoading || Time.unscaledTime < _cameraFeedRevealAt)
+            {
+                return;
+            }
+
+            _cameraFeedLoading = false;
+            _cameraFeedLoadingOverlay.style.display = DisplayStyle.None;
+            _cameraFeedImage.style.display = _cameraFeedActive
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+            _feedPlaceholderLabel.style.display = _cameraFeedActive
+                ? DisplayStyle.None
+                : DisplayStyle.Flex;
+
+            if (_cameraDashboardOpen)
+            {
+                TryShowBolojan(_activeCameraId);
+            }
         }
 
         private void UpdateCameraFeed(string cameraId, string locationName)
         {
             _activeCameraId = cameraId;
-            Texture2D feedTexture = null;
-            if (cameraId == "CAM 01")
-            {
-                feedTexture = _dairyCameraFeed;
-            }
-            else if (cameraId == "CAM 02")
-            {
-                feedTexture = _bakeryCameraFeed;
-            }
-            else if (cameraId == "CAM 03")
-            {
-                feedTexture = _parksideCameraFeed;
-            }
-            else if (cameraId == "CAM 04")
-            {
-                feedTexture = _detergentsCameraFeed;
-            }
-            else if (cameraId == "CAM 05")
-            {
-                feedTexture = _iceCreamCameraFeed;
-            }
-            else if (cameraId == "CAM 06")
-            {
-                feedTexture = _checkoutsCameraFeed;
-            }
-            else if (cameraId == "CAM 07")
-            {
-                feedTexture = _stockroomCameraFeed;
-            }
-            else if (cameraId == "CAM 08")
-            {
-                feedTexture = _employeeRoomCameraFeed;
-            }
-
+            Texture2D feedTexture = ResolveCameraFeedTexture(cameraId);
             _cameraFeedActive = feedTexture != null;
             _cameraFeedImage.image = feedTexture;
             _cameraFeedImage.style.display = _cameraFeedActive
@@ -895,16 +1074,92 @@ namespace FiveNightsAtLidl.UI
             _cameraFeedImage.style.top = new Length(-2.5f, LengthUnit.Percent);
         }
 
+        private Texture2D ResolveCameraFeedTexture(string cameraId)
+        {
+            Texture2D cabralTexture = ResolveCabralCameraTexture(cameraId);
+            if (cabralTexture != null)
+            {
+                return cabralTexture;
+            }
+
+            Texture2D sellyTexture = ResolveSellyCameraTexture(cameraId);
+            if (sellyTexture != null)
+            {
+                return sellyTexture;
+            }
+
+            if (cameraId == "CAM 01")
+            {
+                return _dairyCameraFeed;
+            }
+
+            if (cameraId == "CAM 02")
+            {
+                return _bakeryCameraFeed;
+            }
+
+            if (cameraId == "CAM 03")
+            {
+                return _parksideCameraFeed;
+            }
+
+            if (cameraId == SellyCameraFourId)
+            {
+                return _detergentsCameraFeed;
+            }
+
+            if (cameraId == SellyCameraFiveId)
+            {
+                return _iceCreamCameraFeed;
+            }
+
+            if (cameraId == "CAM 06")
+            {
+                return _checkoutsCameraFeed;
+            }
+
+            if (cameraId == SellyCameraSevenId)
+            {
+                return _stockroomCameraFeed;
+            }
+
+            if (cameraId == SellyCameraEightId)
+            {
+                return _employeeRoomCameraFeed;
+            }
+
+            return null;
+        }
+
         private void AnimateCameraFeed()
         {
+            UpdateCameraFeedLoading();
             if (!_cameraDashboardOpen || !_cameraFeedActive || _cameraFeedImage == null)
             {
                 return;
             }
 
             float now = Time.unscaledTime;
-            float panX = -2.5f + Mathf.Sin(now * 0.18f) * 1.15f;
-            float panY = -2.5f + Mathf.Sin(now * 0.13f + 1.1f) * 0.75f;
+            bool hasSellyMovementStatic = now < _sellyCameraStaticUntil &&
+                _sellyStaticCameraIds.Contains(_activeCameraId);
+            bool hasCabralMovementStatic = now < _cabralCameraStaticUntil &&
+                _cabralStaticCameraIds.Contains(_activeCameraId);
+            if (now >= _sellyCameraStaticUntil && _sellyStaticCameraIds.Count > 0)
+            {
+                _sellyStaticCameraIds.Clear();
+            }
+
+            if (now >= _cabralCameraStaticUntil && _cabralStaticCameraIds.Count > 0)
+            {
+                _cabralStaticCameraIds.Clear();
+            }
+
+            bool hasThreatMovementStatic = hasSellyMovementStatic || hasCabralMovementStatic;
+
+            float staticJitterX = hasThreatMovementStatic ? Random.Range(-0.22f, 0.22f) : 0f;
+            float staticJitterY = hasThreatMovementStatic ? Random.Range(-0.14f, 0.14f) : 0f;
+            float panX = -2.5f + Mathf.Sin(now * 0.18f) * 1.15f + staticJitterX;
+            float panY = -2.5f + Mathf.Sin(now * 0.13f + 1.1f) * 0.75f + staticJitterY;
             _cameraFeedImage.style.left = new Length(panX, LengthUnit.Percent);
             _cameraFeedImage.style.top = new Length(panY, LengthUnit.Percent);
 
@@ -916,10 +1171,14 @@ namespace FiveNightsAtLidl.UI
 
             bool isFlickering = now < _cameraFeedFlickerUntil;
             float quietNoise = Mathf.PerlinNoise(now * 7.3f, 0.37f);
-            _cameraFeedImage.style.opacity = isFlickering
+            _cameraFeedImage.style.opacity = hasThreatMovementStatic
+                ? Random.Range(0.87f, 0.96f)
+                : isFlickering
                 ? Random.Range(0.82f, 0.91f)
                 : 0.96f + (quietNoise - 0.5f) * 0.025f;
-            _cameraFlickerOverlay.style.opacity = isFlickering
+            _cameraFlickerOverlay.style.opacity = hasThreatMovementStatic
+                ? Random.Range(0.055f, 0.115f)
+                : isFlickering
                 ? 0.09f
                 : 0.008f + quietNoise * 0.015f;
 
@@ -956,7 +1215,10 @@ namespace FiveNightsAtLidl.UI
             _cameraDashboard.BringToFront();
             _clockLabel.parent.BringToFront();
             _batteryLabel.parent.BringToFront();
-            TryShowBolojan(_activeCameraId);
+            if (!_cameraFeedLoading)
+            {
+                TryShowBolojan(_activeCameraId);
+            }
         }
 
         private void HideCameraDashboard()
@@ -975,9 +1237,599 @@ namespace FiveNightsAtLidl.UI
             return _cameraDashboardOpen;
         }
 
+        private void UpdateSellyThreat(float elapsedSeconds)
+        {
+            if (!_sellyThreatActive)
+            {
+                return;
+            }
+
+            if (IsSellyAtOfficeDoor())
+            {
+                UpdateSellyDoorThreat(elapsedSeconds);
+                return;
+            }
+
+            _sellyMovementOpportunityElapsed += elapsedSeconds;
+            float opportunitySeconds = Mathf.Max(0.1f, _sellyMovementOpportunitySeconds);
+            while (_sellyMovementOpportunityElapsed >= opportunitySeconds)
+            {
+                _sellyMovementOpportunityElapsed -= opportunitySeconds;
+                TryAdvanceSelly();
+                if (IsSellyAtOfficeDoor())
+                {
+                    return;
+                }
+            }
+        }
+
+        private void TryAdvanceSelly()
+        {
+            if (IsSellyObserved())
+            {
+                LogSellyState("Movement opportunity blocked because his current feed is observed.");
+                return;
+            }
+
+            int aiLevel = GetSellyAiLevel();
+            int roll = Random.Range(1, 21);
+            if (roll > aiLevel)
+            {
+                LogSellyState($"Movement roll {roll} failed against AI {aiLevel}.");
+                return;
+            }
+
+            int nextRouteIndex = Mathf.Min(_sellyRouteIndex + 1, SellyDoorRouteIndex);
+            SetSellyRouteIndex(nextRouteIndex);
+            LogSellyState($"Movement roll {roll} succeeded against AI {aiLevel}.");
+        }
+
+        private void UpdateSellyDoorThreat(float elapsedSeconds)
+        {
+            if (_sellyRetreatPending)
+            {
+                _sellyRetreatElapsed += elapsedSeconds;
+                if (_sellyRetreatElapsed >= _sellyRetreatDelay)
+                {
+                    RetreatSellyFromDoor();
+                }
+
+                return;
+            }
+
+            if (_rightDoorClosed)
+            {
+                BeginSellyRetreat();
+                return;
+            }
+
+            _sellyDoorOpenElapsed += elapsedSeconds;
+            if (_sellyDoorOpenElapsed >= _sellyOpenDoorAttackSeconds)
+            {
+                TriggerSellyJumpscare();
+            }
+        }
+
+        private void BeginSellyRetreat()
+        {
+            float minimumDelay = Mathf.Min(
+                _sellyMinimumRetreatDelaySeconds,
+                _sellyMaximumRetreatDelaySeconds);
+            float maximumDelay = Mathf.Max(
+                _sellyMinimumRetreatDelaySeconds,
+                _sellyMaximumRetreatDelaySeconds);
+
+            _sellyRetreatPending = true;
+            _sellyRetreatElapsed = 0f;
+            _sellyRetreatDelay = Random.Range(minimumDelay, maximumDelay);
+            LogSellyState($"Right door blocked him; retreat scheduled in {_sellyRetreatDelay:0.00}s.");
+        }
+
+        private void RetreatSellyFromDoor()
+        {
+            int roomsToRetreat = Random.Range(2, 4);
+            int destinationIndex = Mathf.Clamp(
+                SellyDoorRouteIndex - roomsToRetreat,
+                0,
+                SellyDoorRouteIndex - 1);
+            _sellyRetreatPending = false;
+            _sellyRetreatElapsed = 0f;
+            _sellyRetreatDelay = 0f;
+            SetSellyRouteIndex(destinationIndex);
+            LogSellyState($"Retreated {roomsToRetreat} rooms after the right door closed.");
+        }
+
+        private void SetSellyRouteIndex(int routeIndex)
+        {
+            string previousCameraId = GetSellyCameraId(_sellyRouteIndex);
+            if (!string.IsNullOrEmpty(previousCameraId))
+            {
+                _roomsOccupiedByOtherThreats.Remove(previousCameraId);
+            }
+
+            _sellyRouteIndex = Mathf.Clamp(routeIndex, 0, SellyDoorRouteIndex);
+            _sellyDoorOpenElapsed = 0f;
+            _sellyRetreatPending = false;
+            _sellyRetreatElapsed = 0f;
+            _sellyRetreatDelay = 0f;
+
+            string currentCameraId = GetSellyCameraId(_sellyRouteIndex);
+            TriggerSellyMovementStatic(previousCameraId, currentCameraId);
+            if (!string.IsNullOrEmpty(currentCameraId))
+            {
+                _roomsOccupiedByOtherThreats.Add(currentCameraId);
+                if (_bolojanVisible && currentCameraId == _activeCameraId)
+                {
+                    DismissBolojan();
+                }
+            }
+
+            RefreshActiveCameraThreatTexture();
+            UpdateOfficeVisualState();
+            LogSellyState($"Now at {GetSellyLocationLabel(_sellyRouteIndex)}.");
+        }
+
+        private void DeactivateSellyThreat()
+        {
+            if (!_sellyThreatActive)
+            {
+                return;
+            }
+
+            string cameraId = GetSellyCameraId(_sellyRouteIndex);
+            if (!string.IsNullOrEmpty(cameraId))
+            {
+                _roomsOccupiedByOtherThreats.Remove(cameraId);
+            }
+
+            _sellyThreatActive = false;
+            _sellyRetreatPending = false;
+            _sellyStaticCameraIds.Clear();
+            _sellyCameraStaticUntil = 0f;
+            RefreshActiveCameraThreatTexture();
+            UpdateOfficeVisualState();
+        }
+
+        private void TriggerSellyMovementStatic(
+            string previousCameraId,
+            string currentCameraId)
+        {
+            _sellyStaticCameraIds.Clear();
+            if (!string.IsNullOrEmpty(previousCameraId))
+            {
+                _sellyStaticCameraIds.Add(previousCameraId);
+            }
+
+            if (!string.IsNullOrEmpty(currentCameraId))
+            {
+                _sellyStaticCameraIds.Add(currentCameraId);
+            }
+
+            _sellyCameraStaticUntil = _sellyStaticCameraIds.Count > 0
+                ? Time.unscaledTime + SellyMovementStaticDurationSeconds
+                : 0f;
+        }
+
+        private bool IsSellyObserved()
+        {
+            string currentCameraId = GetSellyCameraId(_sellyRouteIndex);
+            return !string.IsNullOrEmpty(currentCameraId) &&
+                _cameraDashboardOpen &&
+                !_cameraFeedLoading &&
+                _activeCameraId == currentCameraId;
+        }
+
+        private bool IsSellyAtOfficeDoor()
+        {
+            return _sellyThreatActive && _sellyRouteIndex == SellyDoorRouteIndex;
+        }
+
+        private Texture2D ResolveSellyCameraTexture(string cameraId)
+        {
+            if (!_sellyThreatActive || GetSellyCameraId(_sellyRouteIndex) != cameraId)
+            {
+                return null;
+            }
+
+            if (_sellyRouteIndex == 0)
+            {
+                return _sellyCameraFourTexture;
+            }
+
+            if (_sellyRouteIndex == 1)
+            {
+                return _sellyCameraFiveTexture;
+            }
+
+            if (_sellyRouteIndex == 2)
+            {
+                return _sellyCameraSevenTexture;
+            }
+
+            if (_sellyRouteIndex == 3)
+            {
+                return _sellyCameraEightTexture;
+            }
+
+            return null;
+        }
+
+        private void RefreshActiveCameraThreatTexture()
+        {
+            if (_cameraFeedImage == null)
+            {
+                return;
+            }
+
+            Texture2D feedTexture = ResolveCameraFeedTexture(_activeCameraId);
+            _cameraFeedActive = feedTexture != null;
+            _cameraFeedImage.image = feedTexture;
+            if (!_cameraFeedLoading)
+            {
+                _cameraFeedImage.style.display = _cameraFeedActive
+                    ? DisplayStyle.Flex
+                    : DisplayStyle.None;
+                _feedPlaceholderLabel.style.display = _cameraFeedActive
+                    ? DisplayStyle.None
+                    : DisplayStyle.Flex;
+            }
+        }
+
+        private int GetSellyAiLevel()
+        {
+            if (_sellyAiOverride >= 0)
+            {
+                return _sellyAiOverride;
+            }
+
+            int baseAi;
+            switch (_nightNumber)
+            {
+                case 1:
+                case 3:
+                    baseAi = 0;
+                    break;
+                case 2:
+                    baseAi = 3;
+                    break;
+                case 4:
+                    baseAi = 2;
+                    break;
+                case 5:
+                    baseAi = 5;
+                    break;
+                case 6:
+                    baseAi = 10;
+                    break;
+                default:
+                    baseAi = Mathf.Clamp(10 + (_nightNumber - 6) * 2, 0, 20);
+                    break;
+            }
+
+            int hourBonus = 0;
+            if (_displayedHour >= 2)
+            {
+                hourBonus++;
+            }
+
+            if (_displayedHour >= 3)
+            {
+                hourBonus++;
+            }
+
+            if (_displayedHour >= 4)
+            {
+                hourBonus++;
+            }
+
+            return Mathf.Clamp(baseAi + hourBonus, 0, 20);
+        }
+
+        private static string GetSellyCameraId(int routeIndex)
+        {
+            switch (routeIndex)
+            {
+                case 0:
+                    return SellyCameraFourId;
+                case 1:
+                    return SellyCameraFiveId;
+                case 2:
+                    return SellyCameraSevenId;
+                case 3:
+                    return SellyCameraEightId;
+                default:
+                    return null;
+            }
+        }
+
+        private static string GetSellyLocationLabel(int routeIndex)
+        {
+            string cameraId = GetSellyCameraId(routeIndex);
+            return string.IsNullOrEmpty(cameraId) ? "RIGHT OFFICE DOOR" : cameraId;
+        }
+
+        private void LogSellyState(string message)
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log($"[Selly] {message}", this);
+#endif
+        }
+
+        private void UpdateCabralThreat(float elapsedSeconds)
+        {
+            if (!_cabralThreatActive)
+            {
+                return;
+            }
+
+            if (IsCabralAtOfficeDoor())
+            {
+                UpdateCabralDoorThreat(elapsedSeconds);
+                return;
+            }
+
+            _cabralMovementOpportunityElapsed += elapsedSeconds;
+            float opportunitySeconds = Mathf.Max(0.1f, _cabralMovementOpportunitySeconds);
+            while (_cabralMovementOpportunityElapsed >= opportunitySeconds)
+            {
+                _cabralMovementOpportunityElapsed -= opportunitySeconds;
+                TryAdvanceCabral();
+                if (IsCabralAtOfficeDoor())
+                {
+                    return;
+                }
+            }
+        }
+
+        private void TryAdvanceCabral()
+        {
+            int aiLevel = GetCabralAiLevel();
+            int roll = Random.Range(1, 21);
+            if (roll > aiLevel)
+            {
+                LogCabralState($"Movement roll {roll} failed against AI {aiLevel}.");
+                return;
+            }
+
+            int nextRouteIndex = Mathf.Min(_cabralRouteIndex + 1, CabralDoorRouteIndex);
+            SetCabralRouteIndex(nextRouteIndex);
+            LogCabralState($"Movement roll {roll} succeeded against AI {aiLevel}; camera observation does not stall him.");
+        }
+
+        private void UpdateCabralDoorThreat(float elapsedSeconds)
+        {
+            if (_cabralRetreatPending)
+            {
+                _cabralRetreatElapsed += elapsedSeconds;
+                if (_cabralRetreatElapsed >= _cabralRetreatDelay)
+                {
+                    RetreatCabralFromDoor();
+                }
+
+                return;
+            }
+
+            if (_leftDoorClosed)
+            {
+                BeginCabralRetreat();
+                return;
+            }
+
+            _cabralDoorOpenElapsed += elapsedSeconds;
+            if (_cabralDoorOpenElapsed >= _cabralOpenDoorAttackSeconds)
+            {
+                TriggerCabralJumpscare();
+            }
+        }
+
+        private void BeginCabralRetreat()
+        {
+            float minimumDelay = Mathf.Min(
+                _cabralMinimumRetreatDelaySeconds,
+                _cabralMaximumRetreatDelaySeconds);
+            float maximumDelay = Mathf.Max(
+                _cabralMinimumRetreatDelaySeconds,
+                _cabralMaximumRetreatDelaySeconds);
+
+            _cabralRetreatPending = true;
+            _cabralRetreatElapsed = 0f;
+            _cabralRetreatDelay = Random.Range(minimumDelay, maximumDelay);
+            LogCabralState($"Left door blocked him; retreat scheduled in {_cabralRetreatDelay:0.00}s.");
+        }
+
+        private void RetreatCabralFromDoor()
+        {
+            int roomsToRetreat = Random.Range(2, 4);
+            int destinationIndex = Mathf.Clamp(
+                CabralDoorRouteIndex - roomsToRetreat,
+                0,
+                CabralDoorRouteIndex - 1);
+            _cabralRetreatPending = false;
+            _cabralRetreatElapsed = 0f;
+            _cabralRetreatDelay = 0f;
+            SetCabralRouteIndex(destinationIndex);
+            LogCabralState($"Retreated {roomsToRetreat} rooms after the left door closed.");
+        }
+
+        private void SetCabralRouteIndex(int routeIndex)
+        {
+            string previousCameraId = GetCabralCameraId(_cabralRouteIndex);
+            if (!string.IsNullOrEmpty(previousCameraId))
+            {
+                _roomsOccupiedByOtherThreats.Remove(previousCameraId);
+            }
+
+            _cabralRouteIndex = Mathf.Clamp(routeIndex, 0, CabralDoorRouteIndex);
+            _cabralDoorOpenElapsed = 0f;
+            _cabralRetreatPending = false;
+            _cabralRetreatElapsed = 0f;
+            _cabralRetreatDelay = 0f;
+
+            string currentCameraId = GetCabralCameraId(_cabralRouteIndex);
+            TriggerCabralMovementStatic(previousCameraId, currentCameraId);
+            if (!string.IsNullOrEmpty(currentCameraId))
+            {
+                _roomsOccupiedByOtherThreats.Add(currentCameraId);
+                if (_bolojanVisible && currentCameraId == _activeCameraId)
+                {
+                    DismissBolojan();
+                }
+            }
+
+            RefreshActiveCameraThreatTexture();
+            UpdateOfficeVisualState();
+            LogCabralState($"Now at {GetCabralLocationLabel(_cabralRouteIndex)}.");
+        }
+
+        private void DeactivateCabralThreat()
+        {
+            if (!_cabralThreatActive)
+            {
+                return;
+            }
+
+            string cameraId = GetCabralCameraId(_cabralRouteIndex);
+            if (!string.IsNullOrEmpty(cameraId))
+            {
+                _roomsOccupiedByOtherThreats.Remove(cameraId);
+            }
+
+            _cabralThreatActive = false;
+            _cabralRetreatPending = false;
+            _cabralStaticCameraIds.Clear();
+            _cabralCameraStaticUntil = 0f;
+            RefreshActiveCameraThreatTexture();
+            UpdateOfficeVisualState();
+        }
+
+        private void TriggerCabralMovementStatic(
+            string previousCameraId,
+            string currentCameraId)
+        {
+            _cabralStaticCameraIds.Clear();
+            if (!string.IsNullOrEmpty(previousCameraId))
+            {
+                _cabralStaticCameraIds.Add(previousCameraId);
+            }
+
+            if (!string.IsNullOrEmpty(currentCameraId))
+            {
+                _cabralStaticCameraIds.Add(currentCameraId);
+            }
+
+            _cabralCameraStaticUntil = _cabralStaticCameraIds.Count > 0
+                ? Time.unscaledTime + CabralMovementStaticDurationSeconds
+                : 0f;
+        }
+
+        private bool IsCabralAtOfficeDoor()
+        {
+            return _cabralThreatActive && _cabralRouteIndex == CabralDoorRouteIndex;
+        }
+
+        private Texture2D ResolveCabralCameraTexture(string cameraId)
+        {
+            if (!_cabralThreatActive || GetCabralCameraId(_cabralRouteIndex) != cameraId)
+            {
+                return null;
+            }
+
+            if (_cabralRouteIndex == 0)
+            {
+                return _cabralCameraOneTexture;
+            }
+
+            if (_cabralRouteIndex == 1)
+            {
+                return _cabralCameraTwoTexture;
+            }
+
+            if (_cabralRouteIndex == 2)
+            {
+                return _cabralCameraSixTexture;
+            }
+
+            return null;
+        }
+
+        private int GetCabralAiLevel()
+        {
+            if (_cabralAiOverride >= 0)
+            {
+                return _cabralAiOverride;
+            }
+
+            int baseAi;
+            switch (_nightNumber)
+            {
+                case 1:
+                    baseAi = 0;
+                    break;
+                case 2:
+                    baseAi = 1;
+                    break;
+                case 3:
+                    baseAi = 5;
+                    break;
+                case 4:
+                    baseAi = 4;
+                    break;
+                case 5:
+                    baseAi = 7;
+                    break;
+                case 6:
+                    baseAi = 12;
+                    break;
+                default:
+                    baseAi = Mathf.Clamp(12 + (_nightNumber - 6) * 2, 0, 20);
+                    break;
+            }
+
+            int hourBonus = 0;
+            if (_displayedHour >= 3)
+            {
+                hourBonus++;
+            }
+
+            if (_displayedHour >= 4)
+            {
+                hourBonus++;
+            }
+
+            return Mathf.Clamp(baseAi + hourBonus, 0, 20);
+        }
+
+        private static string GetCabralCameraId(int routeIndex)
+        {
+            switch (routeIndex)
+            {
+                case 0:
+                    return CabralCameraOneId;
+                case 1:
+                    return CabralCameraTwoId;
+                case 2:
+                    return CabralCameraSixId;
+                default:
+                    return null;
+            }
+        }
+
+        private static string GetCabralLocationLabel(int routeIndex)
+        {
+            string cameraId = GetCabralCameraId(routeIndex);
+            return string.IsNullOrEmpty(cameraId) ? "LEFT OFFICE DOOR" : cameraId;
+        }
+
+        private void LogCabralState(string message)
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log($"[Cabral] {message}", this);
+#endif
+        }
+
         private void TryShowBolojan(string cameraId)
         {
-            if (!_cameraDashboardOpen || _nightEnded || _bolojanVisible)
+            if (!_cameraDashboardOpen || _cameraFeedLoading || _nightEnded || _bolojanVisible)
             {
                 return;
             }
@@ -1051,29 +1903,80 @@ namespace FiveNightsAtLidl.UI
 
         private void TriggerBolojanTaxJumpscare()
         {
-            TriggerBolojanJumpscare(
+            TriggerJumpscare(
+                _bolojanJumpscareTexture,
                 BolojanTaxMessage,
+                showsMessage: true,
                 endsNight: false,
-                appliesBatteryTax: true);
+                appliesBatteryTax: true,
+                lossTitle: null,
+                lossMessage: null);
         }
 
         private void TriggerPowerFailureJumpscare()
         {
-            TriggerBolojanJumpscare(
+            TriggerJumpscare(
+                _bolojanJumpscareTexture,
                 ElectricityWastedMessage,
+                showsMessage: true,
                 endsNight: true,
-                appliesBatteryTax: false);
+                appliesBatteryTax: false,
+                lossTitle: ElectricityWastedMessage,
+                lossMessage: $"Night {_nightNumber} ended in darkness.");
         }
 
-        private void TriggerBolojanJumpscare(
+        private void TriggerSellyJumpscare()
+        {
+            DeactivateSellyThreat();
+            DeactivateCabralThreat();
+            TriggerJumpscare(
+                _sellyJumpscareTexture,
+                string.Empty,
+                showsMessage: false,
+                endsNight: true,
+                appliesBatteryTax: false,
+                lossTitle: SellyLossTitle,
+                lossMessage: SellyLossMessage);
+        }
+
+        private void TriggerCabralJumpscare()
+        {
+            DeactivateCabralThreat();
+            DeactivateSellyThreat();
+            TriggerJumpscare(
+                _cabralJumpscareTexture,
+                string.Empty,
+                showsMessage: false,
+                endsNight: true,
+                appliesBatteryTax: false,
+                lossTitle: CabralLossTitle,
+                lossMessage: CabralLossMessage);
+        }
+
+        private void TriggerJumpscare(
+            Texture2D jumpscareTexture,
             string message,
+            bool showsMessage,
             bool endsNight,
-            bool appliesBatteryTax)
+            bool appliesBatteryTax,
+            string lossTitle,
+            string lossMessage)
         {
             DismissBolojan();
             _bolojanJumpscareActive = true;
             _bolojanJumpscareEndsNight = endsNight;
+            _jumpscareShowsMessage = showsMessage;
             _bolojanJumpscareElapsed = 0f;
+            if (endsNight)
+            {
+                _lossTitle = string.IsNullOrEmpty(lossTitle)
+                    ? "SHIFT FAILED"
+                    : lossTitle;
+                _lossMessage = string.IsNullOrEmpty(lossMessage)
+                    ? $"Night {_nightNumber} ended."
+                    : lossMessage;
+            }
+
             if (appliesBatteryTax)
             {
                 _batteryRemaining = Mathf.Max(
@@ -1086,7 +1989,7 @@ namespace FiveNightsAtLidl.UI
             _cameraDashboard.style.display = DisplayStyle.None;
             _officeControlsLayer.style.display = DisplayStyle.None;
 
-            _bolojanJumpscareImage.image = _bolojanJumpscareTexture;
+            _bolojanJumpscareImage.image = jumpscareTexture;
             _bolojanJumpscareImage.style.display = DisplayStyle.Flex;
             _bolojanJumpscareMessageLabel.text = message;
             _bolojanJumpscareMessageLabel.style.display = DisplayStyle.None;
@@ -1102,7 +2005,8 @@ namespace FiveNightsAtLidl.UI
             }
 
             _bolojanJumpscareElapsed += elapsedSeconds;
-            bool showMessage = _bolojanJumpscareElapsed >= BolojanTaxTextStartSeconds &&
+            bool showMessage = _jumpscareShowsMessage &&
+                _bolojanJumpscareElapsed >= BolojanTaxTextStartSeconds &&
                 _bolojanJumpscareElapsed <= BolojanTaxTextEndSeconds;
             _bolojanJumpscareMessageLabel.style.display = showMessage
                 ? DisplayStyle.Flex
@@ -1128,6 +2032,7 @@ namespace FiveNightsAtLidl.UI
             }
 
             _bolojanJumpscareActive = false;
+            _jumpscareShowsMessage = false;
             _bolojanJumpscareImage.style.display = DisplayStyle.None;
             _bolojanJumpscareMessageLabel.style.display = DisplayStyle.None;
             _bolojanJumpscareOverlay.style.display = DisplayStyle.None;
@@ -1165,6 +2070,8 @@ namespace FiveNightsAtLidl.UI
             _nextPowerFailureRollAt = PowerFailureRollIntervalSeconds;
             _powerFailureRollCount = 0;
             DismissBolojan();
+            DeactivateSellyThreat();
+            DeactivateCabralThreat();
 
             _cameraDashboardOpen = false;
             _cameraDashboard.style.display = DisplayStyle.None;
@@ -1221,6 +2128,8 @@ namespace FiveNightsAtLidl.UI
             _nightEnded = true;
             _powerFailureActive = false;
             DismissBolojan();
+            DeactivateSellyThreat();
+            DeactivateCabralThreat();
             _cameraDashboardOpen = false;
             _cameraDashboard.style.display = DisplayStyle.None;
             SetOfficeControlsEnabled(false);
@@ -1242,9 +2151,8 @@ namespace FiveNightsAtLidl.UI
             }
             else
             {
-                _resultTitleLabel.text = ElectricityWastedMessage;
-                _resultMessageLabel.text =
-                    $"Night {_nightNumber} ended in darkness.";
+                _resultTitleLabel.text = _lossTitle;
+                _resultMessageLabel.text = _lossMessage;
                 _resultPrimaryButton.text = $"RETRY NIGHT {_nightNumber}";
             }
 
@@ -1301,7 +2209,18 @@ namespace FiveNightsAtLidl.UI
             Texture2D employeeRoomCameraFeed,
             Texture2D bolojanCameraOneTexture,
             Texture2D bolojanCameraSevenTexture,
-            Texture2D bolojanJumpscareTexture)
+            Texture2D bolojanJumpscareTexture,
+            Texture2D sellyCameraFourTexture,
+            Texture2D sellyCameraFiveTexture,
+            Texture2D sellyCameraSevenTexture,
+            Texture2D sellyCameraEightTexture,
+            Texture2D sellyRightDoorTexture,
+            Texture2D sellyJumpscareTexture,
+            Texture2D cabralCameraOneTexture,
+            Texture2D cabralCameraTwoTexture,
+            Texture2D cabralCameraSixTexture,
+            Texture2D cabralLeftDoorTexture,
+            Texture2D cabralJumpscareTexture)
         {
             _fallbackPanelSettings = panelSettings;
             _officeBackground = officeBackground;
@@ -1320,6 +2239,17 @@ namespace FiveNightsAtLidl.UI
             _bolojanCameraOneTexture = bolojanCameraOneTexture;
             _bolojanCameraSevenTexture = bolojanCameraSevenTexture;
             _bolojanJumpscareTexture = bolojanJumpscareTexture;
+            _sellyCameraFourTexture = sellyCameraFourTexture;
+            _sellyCameraFiveTexture = sellyCameraFiveTexture;
+            _sellyCameraSevenTexture = sellyCameraSevenTexture;
+            _sellyCameraEightTexture = sellyCameraEightTexture;
+            _sellyRightDoorTexture = sellyRightDoorTexture;
+            _sellyJumpscareTexture = sellyJumpscareTexture;
+            _cabralCameraOneTexture = cabralCameraOneTexture;
+            _cabralCameraTwoTexture = cabralCameraTwoTexture;
+            _cabralCameraSixTexture = cabralCameraSixTexture;
+            _cabralLeftDoorTexture = cabralLeftDoorTexture;
+            _cabralJumpscareTexture = cabralJumpscareTexture;
         }
 
         private void UpdateClock(bool force)
