@@ -33,8 +33,8 @@ namespace FiveNightsAtLidl.Editor
             "Assets/Game/Art/CameraFeeds/Cam01_Dairy.png";
         private const string BakeryCameraFeedPath =
             "Assets/Game/Art/CameraFeeds/Cam02_Bakery.png";
-        private const string ParksideCameraFeedPath =
-            "Assets/Game/Art/CameraFeeds/Cam03_Parkside.png";
+        private const string FitnessCameraFeedPath =
+            "Assets/Game/Art/CameraFeeds/Cam03_Fitness.png";
         private const string DetergentsCameraFeedPath =
             "Assets/Game/Art/CameraFeeds/Cam04_Detergents.png";
         private const string IceCreamCameraFeedPath =
@@ -73,6 +73,16 @@ namespace FiveNightsAtLidl.Editor
             "Assets/Game/Art/Characters/Cabral/Cabral_LeftDoor_Integrated.png";
         private const string CabralJumpscarePath =
             "Assets/Game/Art/Characters/Cabral/Cabral_Jumpscare.png";
+        private const string DorianHappyPath =
+            "Assets/Game/Art/Characters/Dorian/Dorian_Cam03_HappyBlender_Integrated.png";
+        private const string DorianIrritatedPath =
+            "Assets/Game/Art/Characters/Dorian/Dorian_Cam03_Irritated_Integrated.png";
+        private const string DorianAngryPath =
+            "Assets/Game/Art/Characters/Dorian/Dorian_Cam03_AngryCamera_Integrated.png";
+        private const string DorianJumpscarePath =
+            "Assets/Game/Art/Characters/Dorian/Dorian_Jumpscare.png";
+        private const string DorianBlenderLoopPath =
+            "Assets/Game/Audio/SFX/Dorian_BlenderLoop.wav";
         private const string MenuRenderTexturePath = "Assets/Game/Settings/MenuBackground.renderTexture";
         private const string MacBuildPath = "Builds/macOS/FiveNightsAtLidl.app";
 
@@ -96,7 +106,7 @@ namespace FiveNightsAtLidl.Editor
             Texture2D rightDoorBackground = LoadRequiredTexture(OfficeRightDoorPath);
             Texture2D dairyCameraFeed = LoadRequiredTexture(DairyCameraFeedPath);
             Texture2D bakeryCameraFeed = LoadRequiredTexture(BakeryCameraFeedPath);
-            Texture2D parksideCameraFeed = LoadRequiredTexture(ParksideCameraFeedPath);
+            Texture2D fitnessCameraFeed = LoadRequiredTexture(FitnessCameraFeedPath);
             Texture2D detergentsCameraFeed = LoadRequiredTexture(DetergentsCameraFeedPath);
             Texture2D iceCreamCameraFeed = LoadRequiredTexture(IceCreamCameraFeedPath);
             Texture2D checkoutsCameraFeed = LoadRequiredTexture(CheckoutsCameraFeedPath);
@@ -116,6 +126,11 @@ namespace FiveNightsAtLidl.Editor
             Texture2D cabralCameraSix = LoadRequiredTexture(CabralCameraSixPath);
             Texture2D cabralLeftDoor = LoadRequiredTexture(CabralLeftDoorPath);
             Texture2D cabralJumpscare = LoadRequiredTexture(CabralJumpscarePath);
+            Texture2D dorianHappy = LoadRequiredTexture(DorianHappyPath);
+            Texture2D dorianIrritated = LoadRequiredTexture(DorianIrritatedPath);
+            Texture2D dorianAngry = LoadRequiredTexture(DorianAngryPath);
+            Texture2D dorianJumpscare = LoadRequiredTexture(DorianJumpscarePath);
+            AudioClip dorianBlenderLoop = LoadRequiredAudioClip(DorianBlenderLoopPath);
 
             RenderTexture menuRenderTexture = CreateOrUpdateMenuRenderTexture();
             CreateMainMenuScene(panelSettings, menuVideo, menuRenderTexture);
@@ -128,7 +143,7 @@ namespace FiveNightsAtLidl.Editor
                 rightDoorBackground,
                 dairyCameraFeed,
                 bakeryCameraFeed,
-                parksideCameraFeed,
+                fitnessCameraFeed,
                 detergentsCameraFeed,
                 iceCreamCameraFeed,
                 checkoutsCameraFeed,
@@ -147,7 +162,12 @@ namespace FiveNightsAtLidl.Editor
                 cabralCameraTwo,
                 cabralCameraSix,
                 cabralLeftDoor,
-                cabralJumpscare);
+                cabralJumpscare,
+                dorianHappy,
+                dorianIrritated,
+                dorianAngry,
+                dorianJumpscare,
+                dorianBlenderLoop);
             ConfigureBuildScenes();
             ConfigurePlayerSettings();
 
@@ -243,7 +263,7 @@ namespace FiveNightsAtLidl.Editor
             Texture2D rightDoorBackground,
             Texture2D dairyCameraFeed,
             Texture2D bakeryCameraFeed,
-            Texture2D parksideCameraFeed,
+            Texture2D fitnessCameraFeed,
             Texture2D detergentsCameraFeed,
             Texture2D iceCreamCameraFeed,
             Texture2D checkoutsCameraFeed,
@@ -262,7 +282,12 @@ namespace FiveNightsAtLidl.Editor
             Texture2D cabralCameraTwo,
             Texture2D cabralCameraSix,
             Texture2D cabralLeftDoor,
-            Texture2D cabralJumpscare)
+            Texture2D cabralJumpscare,
+            Texture2D dorianHappy,
+            Texture2D dorianIrritated,
+            Texture2D dorianAngry,
+            Texture2D dorianJumpscare,
+            AudioClip dorianBlenderLoop)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             CreatePresentationCamera();
@@ -280,7 +305,7 @@ namespace FiveNightsAtLidl.Editor
                 rightDoorBackground,
                 dairyCameraFeed,
                 bakeryCameraFeed,
-                parksideCameraFeed,
+                fitnessCameraFeed,
                 detergentsCameraFeed,
                 iceCreamCameraFeed,
                 checkoutsCameraFeed,
@@ -299,7 +324,12 @@ namespace FiveNightsAtLidl.Editor
                 cabralCameraTwo,
                 cabralCameraSix,
                 cabralLeftDoor,
-                cabralJumpscare);
+                cabralJumpscare,
+                dorianHappy,
+                dorianIrritated,
+                dorianAngry,
+                dorianJumpscare,
+                dorianBlenderLoop);
 
             EditorSceneManager.SaveScene(scene, DemoScenePath);
         }
@@ -313,6 +343,17 @@ namespace FiveNightsAtLidl.Editor
             }
 
             return texture;
+        }
+
+        private static AudioClip LoadRequiredAudioClip(string path)
+        {
+            AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+            if (clip == null)
+            {
+                throw new InvalidOperationException($"Required audio clip was not imported at {path}.");
+            }
+
+            return clip;
         }
 
         private static void CreateMainMenuScene(

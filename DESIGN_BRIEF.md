@@ -153,7 +153,7 @@ Number of feeds: **8** for the current floor plan.
 |---|---|---|---|
 | CAM 01 | Dairy | Store-floor route | Connected creator-provided still with subtle surveillance motion and flicker. |
 | CAM 02 | Bakery | Store-floor route | Connected creator-provided still with subtle surveillance motion and flicker. |
-| CAM 03 | Parkside | Tools-lane route | Connected creator-provided still with subtle surveillance motion and flicker. |
+| CAM 03 | Fitness | Protein-and-fitness aisle route | Connected creator-provided still with subtle surveillance motion and flicker. |
 | CAM 04 | Detergents | Cleaning-products lane | Connected creator-provided still with subtle surveillance motion and flicker. |
 | CAM 05 | Ice Cream | Store-floor route beside stockroom | Connected creator-provided still with subtle surveillance motion and flicker. |
 | CAM 06 | Checkouts | Left-side approach to office | Connected creator-provided still with subtle surveillance motion and flicker. |
@@ -185,7 +185,7 @@ are CAM 01–02, CAM 01–03, CAM 01–04, CAM 01–05, CAM 02–03, CAM 02–06
 CAM 03–04, CAM 04–05, CAM 05–07, CAM 06–Office, CAM 07–08, and CAM 08–Office. These links
 are non-directional visual planning aids and will be finalized alongside the
 hostile character's movement design. CAM 01 through CAM 08 now
-display the creator-provided Dairy, Bakery, Parkside tools-lane, Detergents, Ice
+display the creator-provided Dairy, Bakery, Fitness aisle, Detergents, Ice
 Cream, Checkouts, Stockroom, and Employee Room stills with restrained slow pan,
 brightness flicker, and a moving scan bar. Left and right
 door/light controls toggle their respective generated office states. A closed
@@ -384,6 +384,32 @@ is a tense but consistently understandable demo, not extreme difficulty.
   battery tax and displays no Bolojan tax text.
 - `_cabralAiOverride` accepts 0–20 in the gameplay-controller inspector for
   balancing; **-1** uses the current night/hour progression above.
+
+### Implemented threat 04: Dorian Popa
+
+- Dorian is completely absent on **Night 1**: CAM 03 uses the empty Fitness
+  feed, the blender control is hidden, and no Dorian timer runs. He becomes
+  active at 12 AM on **Night 2** and remains exclusively in CAM 03.
+- CAM 03 exposes a **BLENDER POWER** meter and a **HOLD TO CHARGE** button.
+  Charging is possible only while the CAM 03 signal is fully visible. An empty
+  blender takes **5 seconds** of uninterrupted holding to refill, and any actual
+  charge immediately resets Dorian to his happy state.
+- While the blender has charge, Dorian uses his happy-at-the-blender composite.
+  When charge reaches zero he becomes irritated for **5 seconds**, then switches
+  to his angry-at-the-camera composite for another **5 seconds**. If the player
+  does not resume charging before the second stage ends, his dedicated
+  full-screen jumpscare ends the shift.
+- Drain pressure uses Foxy's FNAF 1 aggression progression as its input: base AI
+  is 1/2/6/5/6 on Nights 2–6 and gains one point at both 3 AM and 4 AM. That AI
+  maps a full blender from **50 seconds** at low aggression down to **16.67
+  seconds** at AI 8 or higher. The visible anger states use Foxy's approximately
+  five-second movement-opportunity rhythm while remaining deterministic and
+  readable. `_dorianAiOverride` provides the same 0–20 inspector override used
+  by the moving threats; **-1** restores automatic night/hour progression.
+- The blender plays a quiet looping mechanical sound only while it is running
+  and CAM 03 is visible. The replaceable source clip is
+  `Assets/Game/Audio/SFX/Dorian_BlenderLoop.wav`; its playback volume and all
+  core timing values are exposed on the gameplay controller.
 
 ### Technical starting model
 

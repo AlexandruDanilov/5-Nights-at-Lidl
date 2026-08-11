@@ -158,7 +158,7 @@ MonoBehaviour:
   _rightDoorBackground: {fileID: 2800000, guid: c5dbb7e3200f6447a86699044474d967, type: 3}
   _dairyCameraFeed: {fileID: 2800000, guid: 8f09d730b8a548ad88523b858281e13e, type: 3}
   _bakeryCameraFeed: {fileID: 2800000, guid: 4b758d6565f04ceb879799624392915c, type: 3}
-  _parksideCameraFeed: {fileID: 2800000, guid: e72ff88baab9e46fab543ea00158f0ff, type: 3}
+  _fitnessCameraFeed: {fileID: 2800000, guid: e72ff88baab9e46fab543ea00158f0ff, type: 3}
   _detergentsCameraFeed: {fileID: 2800000, guid: f331cacd83a94195a90584ff5822d5b3, type: 3}
   _iceCreamCameraFeed: {fileID: 2800000, guid: e89f121be367407797e72e11691f1784, type: 3}
   _checkoutsCameraFeed: {fileID: 2800000, guid: dfe5170c9d9e462dbfa014943faa61e3, type: 3}
@@ -192,6 +192,17 @@ MonoBehaviour:
   _cabralMinimumRetreatDelaySeconds: 2
   _cabralMaximumRetreatDelaySeconds: 5
   _cabralAiOverride: -1
+  _dorianHappyTexture: {fileID: 2800000, guid: 28b9a3407feb48a3b444dc98ca63799b, type: 3}
+  _dorianIrritatedTexture: {fileID: 2800000, guid: 9ce00902ca964d9f881dcc0d8a42e1dd, type: 3}
+  _dorianAngryTexture: {fileID: 2800000, guid: a8bac6747c764f83862af2edfd32b8dd, type: 3}
+  _dorianJumpscareTexture: {fileID: 2800000, guid: 67e44b461794423886fff69b04d04a8b, type: 3}
+  _dorianBlenderLoopClip: {fileID: 8300000, guid: 4d48ca3d7d804e2597f1dfca0d2cdf2b, type: 3}
+  _dorianFullChargeSeconds: 5
+  _dorianNightTwoDrainSeconds: 50
+  _dorianMaximumAggressionDrainSeconds: 16.67
+  _dorianAngerStageSeconds: 5
+  _dorianBlenderVolume: 0.16
+  _dorianAiOverride: -1
 --- !u!114 &302293635
 MonoBehaviour:
   m_ObjectHideFlags: 0

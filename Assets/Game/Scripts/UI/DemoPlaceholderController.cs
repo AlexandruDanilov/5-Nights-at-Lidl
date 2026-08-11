@@ -49,6 +49,12 @@ namespace FiveNightsAtLidl.UI
         private const float CabralMovementStaticDurationSeconds = 0.35f;
         private const string CabralLossTitle = "SHIFT FAILED";
         private const string CabralLossMessage = "Cabral reached the office.";
+        private const string DorianCameraId = "CAM 03";
+        private const string DorianLossTitle = "SHIFT FAILED";
+        private const string DorianLossMessage = "Dorian lost patience with the blender.";
+        private const float DorianMaximumCharge = 100f;
+        private const long DorianChargeRepeatIntervalMilliseconds = 50L;
+        private const float DorianChargePulseGraceSeconds = 0.12f;
 
         [SerializeField, Min(1)]
         private int _nightNumber = 1;
@@ -78,7 +84,7 @@ namespace FiveNightsAtLidl.UI
         private Texture2D _bakeryCameraFeed;
 
         [SerializeField]
-        private Texture2D _parksideCameraFeed;
+        private Texture2D _fitnessCameraFeed;
 
         [SerializeField]
         private Texture2D _detergentsCameraFeed;
@@ -191,6 +197,45 @@ namespace FiveNightsAtLidl.UI
         [Tooltip("Editor balance override. -1 uses Chica's current night and hour progression.")]
         private int _cabralAiOverride = -1;
 
+        [Header("Dorian Threat")]
+        [SerializeField]
+        private Texture2D _dorianHappyTexture;
+
+        [SerializeField]
+        private Texture2D _dorianIrritatedTexture;
+
+        [SerializeField]
+        private Texture2D _dorianAngryTexture;
+
+        [SerializeField]
+        private Texture2D _dorianJumpscareTexture;
+
+        [SerializeField]
+        private AudioClip _dorianBlenderLoopClip;
+
+        [SerializeField, Min(0.1f)]
+        [Tooltip("Seconds of uninterrupted winding needed to refill an empty blender.")]
+        private float _dorianFullChargeSeconds = 5f;
+
+        [SerializeField, Min(1f)]
+        [Tooltip("How long a full blender lasts on Night 2 before later-night scaling.")]
+        private float _dorianNightTwoDrainSeconds = 50f;
+
+        [SerializeField, Min(1f)]
+        [Tooltip("Shortest full-charge duration at maximum Foxy-style aggression.")]
+        private float _dorianMaximumAggressionDrainSeconds = 16.67f;
+
+        [SerializeField, Min(0.1f)]
+        [Tooltip("Seconds spent in each visible anger stage before the next stage.")]
+        private float _dorianAngerStageSeconds = 5f;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _dorianBlenderVolume = 0.16f;
+
+        [SerializeField, Range(-1, 20)]
+        [Tooltip("Editor balance override. -1 uses Foxy's current night and hour progression.")]
+        private int _dorianAiOverride = -1;
+
         private Label _clockLabel;
         private Label _batteryLabel;
         private Label _activeCameraLabel;
@@ -202,6 +247,8 @@ namespace FiveNightsAtLidl.UI
         private VisualElement _cameraFlickerOverlay;
         private VisualElement _cameraScanBar;
         private VisualElement _cameraFeedLoadingOverlay;
+        private VisualElement _dorianBlenderPanel;
+        private VisualElement _dorianBlenderFill;
         private VisualElement _bolojanJumpscareOverlay;
         private VisualElement _powerFailureDimOverlay;
         private VisualElement _resultOverlay;
@@ -211,6 +258,7 @@ namespace FiveNightsAtLidl.UI
         private Image _bolojanCameraImage;
         private Image _bolojanJumpscareImage;
         private Label _bolojanJumpscareMessageLabel;
+        private Label _dorianBlenderStatusLabel;
         private Label _resultTitleLabel;
         private Label _resultMessageLabel;
         private Button _leftLightButton;
@@ -220,6 +268,8 @@ namespace FiveNightsAtLidl.UI
         private Button _selectedCameraButton;
         private Button _cameraToggleButton;
         private Button _resultPrimaryButton;
+        private Button _dorianChargeButton;
+        private AudioSource _dorianBlenderAudioSource;
         private float _elapsedNightSeconds;
         private float _batteryRemaining;
         private float _nextCameraFeedFlickerAt;
@@ -260,12 +310,17 @@ namespace FiveNightsAtLidl.UI
         private float _sellyCameraStaticUntil;
         private bool _cabralThreatActive;
         private bool _cabralRetreatPending;
+        private bool _dorianThreatActive;
+        private bool _dorianChargeHeld;
         private int _cabralRouteIndex;
         private float _cabralMovementOpportunityElapsed;
         private float _cabralDoorOpenElapsed;
         private float _cabralRetreatElapsed;
         private float _cabralRetreatDelay;
         private float _cabralCameraStaticUntil;
+        private float _dorianBlenderCharge;
+        private float _dorianAngerElapsed;
+        private float _dorianChargePulseUntil;
         private string _lossTitle = ElectricityWastedMessage;
         private string _lossMessage = "The shift ended in darkness.";
         private string _activeCameraId = BolojanCameraOneId;
@@ -315,6 +370,11 @@ namespace FiveNightsAtLidl.UI
             _cabralRetreatElapsed = 0f;
             _cabralRetreatDelay = 0f;
             _cabralCameraStaticUntil = 0f;
+            _dorianThreatActive = _nightNumber >= 2;
+            _dorianChargeHeld = false;
+            _dorianBlenderCharge = DorianMaximumCharge;
+            _dorianAngerElapsed = 0f;
+            _dorianChargePulseUntil = 0f;
             _lossTitle = ElectricityWastedMessage;
             _lossMessage = $"Night {_nightNumber} ended in darkness.";
             _bolojanExposureElapsed = 0f;
@@ -326,12 +386,23 @@ namespace FiveNightsAtLidl.UI
             _roomsOccupiedByOtherThreats.Clear();
             _roomsOccupiedByOtherThreats.Add(SellyCameraFourId);
             _roomsOccupiedByOtherThreats.Add(CabralCameraOneId);
+            if (_dorianThreatActive)
+            {
+                _roomsOccupiedByOtherThreats.Add(DorianCameraId);
+            }
+
             _sellyStaticCameraIds.Clear();
             _cabralStaticCameraIds.Clear();
             _preNightTitleRemaining = PreNightTitleDurationSeconds;
+            ConfigureDorianBlenderAudio();
             BuildInterface();
             UpdateClock(force: true);
             UpdateBatteryReadout();
+        }
+
+        private void OnDisable()
+        {
+            StopDorianBlenderAudio();
         }
 
         private bool EnsurePanelSettings()
@@ -405,6 +476,12 @@ namespace FiveNightsAtLidl.UI
             }
 
             UpdateCabralThreat(elapsedSeconds);
+            if (_bolojanJumpscareActive || _nightEnded)
+            {
+                return;
+            }
+
+            UpdateDorianThreat(elapsedSeconds);
             if (_bolojanJumpscareActive || _nightEnded)
             {
                 return;
@@ -858,6 +935,9 @@ namespace FiveNightsAtLidl.UI
             _cameraFeedLoadingOverlay.style.display = DisplayStyle.None;
             _cameraFeedViewport.Add(_cameraFeedLoadingOverlay);
 
+            BuildDorianBlenderControls();
+            _cameraFeedViewport.Add(_dorianBlenderPanel);
+
             feedPanel.Add(_cameraFeedViewport);
             UpdateCameraFeed("CAM 01", "DAIRY");
             workspace.Add(feedPanel);
@@ -873,7 +953,7 @@ namespace FiveNightsAtLidl.UI
 
             AddMapRoom(map, "DAIRY", 4f, 4f, 68f, 12f);
             AddMapRoom(map, "BAKERY", 4f, 20f, 13f, 34f);
-            AddMapRoom(map, "PARKSIDE", 21f, 20f, 13f, 34f);
+            AddMapRoom(map, "FITNESS", 21f, 20f, 13f, 34f);
             AddMapRoom(map, "DETERGENTS", 38f, 20f, 13f, 34f);
             AddMapRoom(map, "ICE CREAM", 55f, 20f, 17f, 34f);
             AddMapRoom(map, "STOCKROOM", 76f, 18f, 20f, 69f);
@@ -896,7 +976,7 @@ namespace FiveNightsAtLidl.UI
 
             CreateCameraNode(map, "CAM 01", "DAIRY", 56f, 7f, selectedByDefault: true);
             CreateCameraNode(map, "CAM 02", "BAKERY", 4.5f, 43f);
-            CreateCameraNode(map, "CAM 03", "PARKSIDE", 21.5f, 43f);
+            CreateCameraNode(map, "CAM 03", "FITNESS", 21.5f, 43f);
             CreateCameraNode(map, "CAM 04", "DETERGENTS", 38.5f, 43f);
             CreateCameraNode(map, "CAM 05", "ICE CREAM", 57f, 43f);
             CreateCameraNode(map, "CAM 06", "CHECKOUTS", 7f, 78f);
@@ -917,6 +997,44 @@ namespace FiveNightsAtLidl.UI
             _cameraDashboard.Add(lowerMonitorButton);
 
             root.Add(_cameraDashboard);
+        }
+
+        private void BuildDorianBlenderControls()
+        {
+            _dorianBlenderPanel = new VisualElement { name = "dorian-blender-panel" };
+            _dorianBlenderPanel.AddToClassList("dorian-blender-panel");
+            _dorianBlenderPanel.style.display = DisplayStyle.None;
+
+            Label title = MenuUiFactory.CreateLabel(
+                "BLENDER POWER",
+                "dorian-blender-title");
+            _dorianBlenderPanel.Add(title);
+
+            VisualElement meter = new VisualElement { name = "dorian-blender-meter" };
+            meter.AddToClassList("dorian-blender-meter");
+            _dorianBlenderFill = new VisualElement { name = "dorian-blender-fill" };
+            _dorianBlenderFill.AddToClassList("dorian-blender-fill");
+            meter.Add(_dorianBlenderFill);
+            _dorianBlenderPanel.Add(meter);
+
+            _dorianBlenderStatusLabel = MenuUiFactory.CreateLabel(
+                "RUNNING",
+                "dorian-blender-status");
+            _dorianBlenderPanel.Add(_dorianBlenderStatusLabel);
+
+            _dorianChargeButton = new Button
+            {
+                name = "dorian-charge-button",
+                text = "HOLD TO CHARGE",
+                tooltip = "Keep the blender charged to calm Dorian"
+            };
+            _dorianChargeButton.AddToClassList("dorian-charge-button");
+            _dorianChargeButton.clickable = new Clickable(
+                HandleDorianChargePulse,
+                delay: 0L,
+                interval: DorianChargeRepeatIntervalMilliseconds);
+            _dorianBlenderPanel.Add(_dorianChargeButton);
+            RefreshDorianBlenderControls();
         }
 
         private static void AddMapRoom(
@@ -1001,6 +1119,7 @@ namespace FiveNightsAtLidl.UI
                 return;
             }
 
+            _dorianChargeHeld = false;
             DismissBolojan();
             _selectedCameraButton?.RemoveFromClassList("camera-node-selected");
             _selectedCameraButton = cameraButton;
@@ -1018,6 +1137,8 @@ namespace FiveNightsAtLidl.UI
             _feedPlaceholderLabel.style.display = DisplayStyle.None;
             _cameraFeedLoadingOverlay.style.display = DisplayStyle.Flex;
             _cameraFeedLoadingOverlay.BringToFront();
+            RefreshDorianBlenderControls();
+            UpdateDorianBlenderAudio();
         }
 
         private void UpdateCameraFeedLoading()
@@ -1035,6 +1156,8 @@ namespace FiveNightsAtLidl.UI
             _feedPlaceholderLabel.style.display = _cameraFeedActive
                 ? DisplayStyle.None
                 : DisplayStyle.Flex;
+            RefreshDorianBlenderControls();
+            UpdateDorianBlenderAudio();
 
             if (_cameraDashboardOpen)
             {
@@ -1045,6 +1168,7 @@ namespace FiveNightsAtLidl.UI
         private void UpdateCameraFeed(string cameraId, string locationName)
         {
             _activeCameraId = cameraId;
+            _dorianChargeHeld = false;
             Texture2D feedTexture = ResolveCameraFeedTexture(cameraId);
             _cameraFeedActive = feedTexture != null;
             _cameraFeedImage.image = feedTexture;
@@ -1064,6 +1188,8 @@ namespace FiveNightsAtLidl.UI
             if (!_cameraFeedActive)
             {
                 _feedPlaceholderLabel.text = $"{cameraId}\n{locationName}\nFEED NOT CONNECTED";
+                RefreshDorianBlenderControls();
+                UpdateDorianBlenderAudio();
                 return;
             }
 
@@ -1072,10 +1198,18 @@ namespace FiveNightsAtLidl.UI
             _cameraFeedFlickerUntil = 0f;
             _cameraFeedImage.style.left = new Length(-2.5f, LengthUnit.Percent);
             _cameraFeedImage.style.top = new Length(-2.5f, LengthUnit.Percent);
+            RefreshDorianBlenderControls();
+            UpdateDorianBlenderAudio();
         }
 
         private Texture2D ResolveCameraFeedTexture(string cameraId)
         {
+            Texture2D dorianTexture = ResolveDorianCameraTexture(cameraId);
+            if (dorianTexture != null)
+            {
+                return dorianTexture;
+            }
+
             Texture2D cabralTexture = ResolveCabralCameraTexture(cameraId);
             if (cabralTexture != null)
             {
@@ -1100,7 +1234,7 @@ namespace FiveNightsAtLidl.UI
 
             if (cameraId == "CAM 03")
             {
-                return _parksideCameraFeed;
+                return _fitnessCameraFeed;
             }
 
             if (cameraId == SellyCameraFourId)
@@ -1215,6 +1349,8 @@ namespace FiveNightsAtLidl.UI
             _cameraDashboard.BringToFront();
             _clockLabel.parent.BringToFront();
             _batteryLabel.parent.BringToFront();
+            RefreshDorianBlenderControls();
+            UpdateDorianBlenderAudio();
             if (!_cameraFeedLoading)
             {
                 TryShowBolojan(_activeCameraId);
@@ -1223,6 +1359,7 @@ namespace FiveNightsAtLidl.UI
 
         private void HideCameraDashboard()
         {
+            _dorianChargeHeld = false;
             DismissBolojan();
             _cameraDashboardOpen = false;
             _cameraDashboard.style.display = DisplayStyle.None;
@@ -1230,6 +1367,8 @@ namespace FiveNightsAtLidl.UI
             _officeControlsLayer.BringToFront();
             _clockLabel.parent.BringToFront();
             _batteryLabel.parent.BringToFront();
+            RefreshDorianBlenderControls();
+            UpdateDorianBlenderAudio();
         }
 
         private bool IsCameraDashboardOpen()
@@ -1827,6 +1966,326 @@ namespace FiveNightsAtLidl.UI
 #endif
         }
 
+        private void UpdateDorianThreat(float elapsedSeconds)
+        {
+            if (!_dorianThreatActive)
+            {
+                StopDorianBlenderAudio();
+                return;
+            }
+
+            int previousStage = GetDorianVisualStage();
+            bool receivingCharge = _dorianChargeHeld &&
+                Time.unscaledTime <= _dorianChargePulseUntil &&
+                CanChargeDorianBlender();
+            if (!receivingCharge)
+            {
+                _dorianChargeHeld = false;
+                if (_dorianBlenderCharge > 0f)
+                {
+                    float drainDuration = GetDorianDrainDurationSeconds();
+                    _dorianBlenderCharge = Mathf.Max(
+                        0f,
+                        _dorianBlenderCharge -
+                            DorianMaximumCharge / drainDuration * elapsedSeconds);
+                    if (_dorianBlenderCharge <= 0f)
+                    {
+                        _dorianAngerElapsed = 0f;
+                    }
+                }
+                else
+                {
+                    _dorianAngerElapsed += elapsedSeconds;
+                    float attackDelay = Mathf.Max(0.1f, _dorianAngerStageSeconds) * 2f;
+                    if (_dorianAngerElapsed >= attackDelay)
+                    {
+                        TriggerDorianJumpscare();
+                        return;
+                    }
+                }
+            }
+
+            if (GetDorianVisualStage() != previousStage)
+            {
+                RefreshActiveCameraThreatTexture();
+                _cameraFeedFlickerUntil = Time.unscaledTime + 0.12f;
+            }
+
+            RefreshDorianBlenderControls();
+            UpdateDorianBlenderAudio();
+        }
+
+        private void HandleDorianChargePulse()
+        {
+            if (!CanChargeDorianBlender())
+            {
+                _dorianChargeHeld = false;
+                return;
+            }
+
+            _dorianChargeHeld = true;
+            _dorianChargePulseUntil =
+                Time.unscaledTime + DorianChargePulseGraceSeconds;
+            float fullChargeSeconds = Mathf.Max(0.1f, _dorianFullChargeSeconds);
+            float pulseSeconds = DorianChargeRepeatIntervalMilliseconds / 1000f;
+            ChargeDorianBlender(
+                DorianMaximumCharge / fullChargeSeconds * pulseSeconds);
+        }
+
+        private void ChargeDorianBlender(float amount)
+        {
+            if (!_dorianThreatActive)
+            {
+                return;
+            }
+
+            int previousStage = GetDorianVisualStage();
+            _dorianBlenderCharge = Mathf.Clamp(
+                _dorianBlenderCharge + Mathf.Max(0f, amount),
+                0f,
+                DorianMaximumCharge);
+            _dorianAngerElapsed = 0f;
+
+            if (GetDorianVisualStage() != previousStage)
+            {
+                RefreshActiveCameraThreatTexture();
+            }
+
+            RefreshDorianBlenderControls();
+            UpdateDorianBlenderAudio();
+        }
+
+        private bool CanChargeDorianBlender()
+        {
+            return _dorianThreatActive &&
+                _nightStarted &&
+                !_nightEnded &&
+                !_powerFailureActive &&
+                !_bolojanJumpscareActive &&
+                _cameraDashboardOpen &&
+                !_cameraFeedLoading &&
+                _activeCameraId == DorianCameraId;
+        }
+
+        private float GetDorianDrainDurationSeconds()
+        {
+            float nightTwoDuration = Mathf.Max(1f, _dorianNightTwoDrainSeconds);
+            float maximumAggressionDuration = Mathf.Clamp(
+                _dorianMaximumAggressionDrainSeconds,
+                1f,
+                nightTwoDuration);
+            float aggression = Mathf.InverseLerp(1f, 8f, GetDorianAiLevel());
+            return Mathf.Lerp(nightTwoDuration, maximumAggressionDuration, aggression);
+        }
+
+        private int GetDorianAiLevel()
+        {
+            if (_dorianAiOverride >= 0)
+            {
+                return _dorianAiOverride;
+            }
+
+            int baseAi;
+            switch (_nightNumber)
+            {
+                case 1:
+                    baseAi = 0;
+                    break;
+                case 2:
+                    baseAi = 1;
+                    break;
+                case 3:
+                    baseAi = 2;
+                    break;
+                case 4:
+                    baseAi = 6;
+                    break;
+                case 5:
+                    baseAi = 5;
+                    break;
+                case 6:
+                    baseAi = 6;
+                    break;
+                default:
+                    baseAi = Mathf.Clamp(6 + (_nightNumber - 6) * 2, 0, 20);
+                    break;
+            }
+
+            int hourBonus = 0;
+            if (_displayedHour >= 3)
+            {
+                hourBonus++;
+            }
+
+            if (_displayedHour >= 4)
+            {
+                hourBonus++;
+            }
+
+            return Mathf.Clamp(baseAi + hourBonus, 0, 20);
+        }
+
+        private int GetDorianVisualStage()
+        {
+            if (!_dorianThreatActive)
+            {
+                return -1;
+            }
+
+            if (_dorianBlenderCharge > 0f)
+            {
+                return 0;
+            }
+
+            return _dorianAngerElapsed < Mathf.Max(0.1f, _dorianAngerStageSeconds)
+                ? 1
+                : 2;
+        }
+
+        private Texture2D ResolveDorianCameraTexture(string cameraId)
+        {
+            if (!_dorianThreatActive || cameraId != DorianCameraId)
+            {
+                return null;
+            }
+
+            switch (GetDorianVisualStage())
+            {
+                case 0:
+                    return _dorianHappyTexture;
+                case 1:
+                    return _dorianIrritatedTexture;
+                default:
+                    return _dorianAngryTexture;
+            }
+        }
+
+        private void RefreshDorianBlenderControls()
+        {
+            if (_dorianBlenderPanel == null)
+            {
+                return;
+            }
+
+            bool shouldShow = _dorianThreatActive &&
+                _cameraDashboardOpen &&
+                !_cameraFeedLoading &&
+                !_nightEnded &&
+                !_powerFailureActive &&
+                _activeCameraId == DorianCameraId;
+            _dorianBlenderPanel.style.display = shouldShow
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+            if (!shouldShow)
+            {
+                _dorianChargeHeld = false;
+            }
+
+            float chargePercent = Mathf.Clamp(
+                _dorianBlenderCharge,
+                0f,
+                DorianMaximumCharge);
+            if (_dorianBlenderFill != null)
+            {
+                _dorianBlenderFill.style.width = new Length(
+                    chargePercent,
+                    LengthUnit.Percent);
+            }
+
+            int stage = GetDorianVisualStage();
+            _dorianBlenderPanel.EnableInClassList("dorian-blender-warning", stage == 1);
+            _dorianBlenderPanel.EnableInClassList("dorian-blender-danger", stage == 2);
+            if (_dorianBlenderStatusLabel != null)
+            {
+                _dorianBlenderStatusLabel.text = stage == 0
+                    ? "RUNNING"
+                    : stage == 1
+                    ? "STOPPED / IRRITATED"
+                    : "DANGER / ANGRY";
+            }
+
+            if (_dorianChargeButton != null)
+            {
+                _dorianChargeButton.text = _dorianChargeHeld
+                    ? "CHARGING..."
+                    : "HOLD TO CHARGE";
+                _dorianChargeButton.SetEnabled(shouldShow && CanChargeDorianBlender());
+            }
+        }
+
+        private void ConfigureDorianBlenderAudio()
+        {
+            _dorianBlenderAudioSource = GetComponent<AudioSource>();
+            if (_dorianBlenderAudioSource == null)
+            {
+                _dorianBlenderAudioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            _dorianBlenderAudioSource.playOnAwake = false;
+            _dorianBlenderAudioSource.loop = true;
+            _dorianBlenderAudioSource.spatialBlend = 0f;
+            _dorianBlenderAudioSource.volume = _dorianBlenderVolume;
+            _dorianBlenderAudioSource.clip = _dorianBlenderLoopClip;
+        }
+
+        private void UpdateDorianBlenderAudio()
+        {
+            if (_dorianBlenderAudioSource == null)
+            {
+                return;
+            }
+
+            bool shouldPlay = _dorianBlenderLoopClip != null &&
+                _dorianThreatActive &&
+                _dorianBlenderCharge > 0f &&
+                _nightStarted &&
+                !_nightEnded &&
+                !_powerFailureActive &&
+                !_bolojanJumpscareActive &&
+                _cameraDashboardOpen &&
+                !_cameraFeedLoading &&
+                _activeCameraId == DorianCameraId;
+            if (!shouldPlay)
+            {
+                StopDorianBlenderAudio();
+                return;
+            }
+
+            if (_dorianBlenderAudioSource.clip != _dorianBlenderLoopClip)
+            {
+                _dorianBlenderAudioSource.clip = _dorianBlenderLoopClip;
+            }
+
+            _dorianBlenderAudioSource.volume = _dorianBlenderVolume;
+            if (!_dorianBlenderAudioSource.isPlaying)
+            {
+                _dorianBlenderAudioSource.Play();
+            }
+        }
+
+        private void StopDorianBlenderAudio()
+        {
+            if (_dorianBlenderAudioSource != null && _dorianBlenderAudioSource.isPlaying)
+            {
+                _dorianBlenderAudioSource.Stop();
+            }
+        }
+
+        private void DeactivateDorianThreat()
+        {
+            if (!_dorianThreatActive)
+            {
+                return;
+            }
+
+            _dorianThreatActive = false;
+            _dorianChargeHeld = false;
+            _roomsOccupiedByOtherThreats.Remove(DorianCameraId);
+            StopDorianBlenderAudio();
+            RefreshDorianBlenderControls();
+            RefreshActiveCameraThreatTexture();
+        }
+
         private void TryShowBolojan(string cameraId)
         {
             if (!_cameraDashboardOpen || _cameraFeedLoading || _nightEnded || _bolojanVisible)
@@ -1929,6 +2388,7 @@ namespace FiveNightsAtLidl.UI
         {
             DeactivateSellyThreat();
             DeactivateCabralThreat();
+            DeactivateDorianThreat();
             TriggerJumpscare(
                 _sellyJumpscareTexture,
                 string.Empty,
@@ -1943,6 +2403,7 @@ namespace FiveNightsAtLidl.UI
         {
             DeactivateCabralThreat();
             DeactivateSellyThreat();
+            DeactivateDorianThreat();
             TriggerJumpscare(
                 _cabralJumpscareTexture,
                 string.Empty,
@@ -1951,6 +2412,21 @@ namespace FiveNightsAtLidl.UI
                 appliesBatteryTax: false,
                 lossTitle: CabralLossTitle,
                 lossMessage: CabralLossMessage);
+        }
+
+        private void TriggerDorianJumpscare()
+        {
+            DeactivateDorianThreat();
+            DeactivateSellyThreat();
+            DeactivateCabralThreat();
+            TriggerJumpscare(
+                _dorianJumpscareTexture,
+                string.Empty,
+                showsMessage: false,
+                endsNight: true,
+                appliesBatteryTax: false,
+                lossTitle: DorianLossTitle,
+                lossMessage: DorianLossMessage);
         }
 
         private void TriggerJumpscare(
@@ -1986,6 +2462,8 @@ namespace FiveNightsAtLidl.UI
             }
 
             _cameraDashboardOpen = false;
+            _dorianChargeHeld = false;
+            StopDorianBlenderAudio();
             _cameraDashboard.style.display = DisplayStyle.None;
             _officeControlsLayer.style.display = DisplayStyle.None;
 
@@ -2072,6 +2550,7 @@ namespace FiveNightsAtLidl.UI
             DismissBolojan();
             DeactivateSellyThreat();
             DeactivateCabralThreat();
+            DeactivateDorianThreat();
 
             _cameraDashboardOpen = false;
             _cameraDashboard.style.display = DisplayStyle.None;
@@ -2130,6 +2609,7 @@ namespace FiveNightsAtLidl.UI
             DismissBolojan();
             DeactivateSellyThreat();
             DeactivateCabralThreat();
+            DeactivateDorianThreat();
             _cameraDashboardOpen = false;
             _cameraDashboard.style.display = DisplayStyle.None;
             SetOfficeControlsEnabled(false);
@@ -2201,7 +2681,7 @@ namespace FiveNightsAtLidl.UI
             Texture2D rightDoorBackground,
             Texture2D dairyCameraFeed,
             Texture2D bakeryCameraFeed,
-            Texture2D parksideCameraFeed,
+            Texture2D fitnessCameraFeed,
             Texture2D detergentsCameraFeed,
             Texture2D iceCreamCameraFeed,
             Texture2D checkoutsCameraFeed,
@@ -2220,7 +2700,12 @@ namespace FiveNightsAtLidl.UI
             Texture2D cabralCameraTwoTexture,
             Texture2D cabralCameraSixTexture,
             Texture2D cabralLeftDoorTexture,
-            Texture2D cabralJumpscareTexture)
+            Texture2D cabralJumpscareTexture,
+            Texture2D dorianHappyTexture,
+            Texture2D dorianIrritatedTexture,
+            Texture2D dorianAngryTexture,
+            Texture2D dorianJumpscareTexture,
+            AudioClip dorianBlenderLoopClip)
         {
             _fallbackPanelSettings = panelSettings;
             _officeBackground = officeBackground;
@@ -2230,7 +2715,7 @@ namespace FiveNightsAtLidl.UI
             _rightDoorBackground = rightDoorBackground;
             _dairyCameraFeed = dairyCameraFeed;
             _bakeryCameraFeed = bakeryCameraFeed;
-            _parksideCameraFeed = parksideCameraFeed;
+            _fitnessCameraFeed = fitnessCameraFeed;
             _detergentsCameraFeed = detergentsCameraFeed;
             _iceCreamCameraFeed = iceCreamCameraFeed;
             _checkoutsCameraFeed = checkoutsCameraFeed;
@@ -2250,6 +2735,11 @@ namespace FiveNightsAtLidl.UI
             _cabralCameraSixTexture = cabralCameraSixTexture;
             _cabralLeftDoorTexture = cabralLeftDoorTexture;
             _cabralJumpscareTexture = cabralJumpscareTexture;
+            _dorianHappyTexture = dorianHappyTexture;
+            _dorianIrritatedTexture = dorianIrritatedTexture;
+            _dorianAngryTexture = dorianAngryTexture;
+            _dorianJumpscareTexture = dorianJumpscareTexture;
+            _dorianBlenderLoopClip = dorianBlenderLoopClip;
         }
 
         private void UpdateClock(bool force)
