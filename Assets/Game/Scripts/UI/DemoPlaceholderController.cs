@@ -10,7 +10,7 @@ namespace FiveNightsAtLidl.UI
     public sealed class DemoPlaceholderController : MonoBehaviour
     {
         private const string MainMenuSceneName = "MainMenu";
-        private const float SecondsPerGameHour = 60f;
+        private const float SecondsPerGameHour = 50f;
         private const float OriginalSecondsPerGameHour = 90f;
         private const int FinalHour = 6;
         private const float StartingBatteryPercent = 100f;
@@ -30,8 +30,11 @@ namespace FiveNightsAtLidl.UI
         private const float BolojanTaxTextStartSeconds = 0.12f;
         private const float BolojanTaxTextEndSeconds = 1.2f;
         private const float CameraFeedSwitchDelaySeconds = 0.25f;
-        private const float PowerFailureRollIntervalSeconds = 1f;
-        private const float PowerFailureChanceStep = 0.1f;
+        private const float PowerFailureRollIntervalSeconds = 3f;
+        private const float PowerFailureInitialChance = 0.15f;
+        private const float PowerFailureChanceStep = 0.05f;
+        private const float VictoryLightsOutHoldSeconds = 0.3f;
+        private const float VictoryBlackoutFadeSeconds = 1.35f;
         private const string BolojanTaxMessage = "BOLOJAN TAX";
         private const string ElectricityWastedMessage = "ELECTRICITY WASTED";
         private const string SellyCameraFourId = "CAM 04";
@@ -55,6 +58,15 @@ namespace FiveNightsAtLidl.UI
         private const float DorianMaximumCharge = 100f;
         private const long DorianChargeRepeatIntervalMilliseconds = 50L;
         private const float DorianChargePulseGraceSeconds = 0.12f;
+        private const int MaximumAiRoll = 25;
+        private const int AutomaticAggressionReduction = 1;
+        private const float DorianMaximumAggressionAi = 10f;
+        private const int FirstOfficeFightNight = 4;
+        private const long OfficeFightBlackoutEndMilliseconds = 960L;
+        private const float ThreatCameraFlickerDurationSeconds = 0.35f;
+        private const string OfficeFightLossTitle = "SHIFT FAILED";
+        private const string OfficeFightLossMessage =
+            "Bostanica and Beregoi turned on you.";
 
         [SerializeField, Min(1)]
         private int _nightNumber = 1;
@@ -64,6 +76,10 @@ namespace FiveNightsAtLidl.UI
 
         [SerializeField]
         private Texture2D _officeBackground;
+
+        [SerializeField]
+        [Tooltip("Night 4+ office wallpaper with the spray bottle integrated into the desk.")]
+        private Texture2D _officeNightFourBackground;
 
         [SerializeField]
         private Texture2D _leftLightBackground;
@@ -159,7 +175,7 @@ namespace FiveNightsAtLidl.UI
         [SerializeField, Min(0f)]
         private float _sellyMaximumRetreatDelaySeconds = 5f;
 
-        [SerializeField, Range(-1, 20)]
+        [SerializeField, Range(-1, MaximumAiRoll)]
         [Tooltip("Editor balance override. -1 uses the current night and hour.")]
         private int _sellyAiOverride = -1;
 
@@ -193,7 +209,7 @@ namespace FiveNightsAtLidl.UI
         [SerializeField, Min(0f)]
         private float _cabralMaximumRetreatDelaySeconds = 5f;
 
-        [SerializeField, Range(-1, 20)]
+        [SerializeField, Range(-1, MaximumAiRoll)]
         [Tooltip("Editor balance override. -1 uses Chica's current night and hour progression.")]
         private int _cabralAiOverride = -1;
 
@@ -213,17 +229,20 @@ namespace FiveNightsAtLidl.UI
         [SerializeField]
         private AudioClip _dorianBlenderLoopClip;
 
+        [SerializeField]
+        private AudioClip _dorianAlarmLoopClip;
+
         [SerializeField, Min(0.1f)]
         [Tooltip("Seconds of uninterrupted winding needed to refill an empty blender.")]
         private float _dorianFullChargeSeconds = 5f;
 
         [SerializeField, Min(1f)]
         [Tooltip("How long a full blender lasts on Night 2 before later-night scaling.")]
-        private float _dorianNightTwoDrainSeconds = 50f;
+        private float _dorianNightTwoDrainSeconds = 55f;
 
         [SerializeField, Min(1f)]
         [Tooltip("Shortest full-charge duration at maximum Foxy-style aggression.")]
-        private float _dorianMaximumAggressionDrainSeconds = 16.67f;
+        private float _dorianMaximumAggressionDrainSeconds = 18.33f;
 
         [SerializeField, Min(0.1f)]
         [Tooltip("Seconds spent in each visible anger stage before the next stage.")]
@@ -232,9 +251,48 @@ namespace FiveNightsAtLidl.UI
         [SerializeField, Range(0f, 1f)]
         private float _dorianBlenderVolume = 0.16f;
 
-        [SerializeField, Range(-1, 20)]
+        [SerializeField, Range(0f, 1f)]
+        private float _dorianAlarmVolume = 0.22f;
+
+        [SerializeField, Range(-1, MaximumAiRoll)]
         [Tooltip("Editor balance override. -1 uses Foxy's current night and hour progression.")]
         private int _dorianAiOverride = -1;
+
+        [Header("Bostanica and Beregoi Threat")]
+        [SerializeField]
+        private Texture2D _bostanicaBeregoiOfficeFightTexture;
+
+        [SerializeField]
+        private Texture2D _bostanicaBeregoiShockedTexture;
+
+        [SerializeField]
+        private Texture2D _bostanicaBeregoiJumpscareTexture;
+
+        [SerializeField]
+        [Tooltip("Full-canvas bottle occlusion layer that keeps the desk prop in front of the girls.")]
+        private Texture2D _officeSprayBottleForegroundTexture;
+
+        [SerializeField]
+        private AudioClip _officeFightSprayHissClip;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _officeFightSprayHissVolume = 0.32f;
+
+        [SerializeField, Range(0f, 1f)]
+        [Tooltip("One independent appearance roll at the beginning of every in-game hour.")]
+        private float _bostanicaBeregoiHourlyChance = 0.5f;
+
+        [SerializeField, Min(0f)]
+        [Tooltip("Earliest second within a successful hour that the fight can begin.")]
+        private float _bostanicaBeregoiMinimumSpawnOffsetSeconds = 3f;
+
+        [SerializeField, Min(0f)]
+        [Tooltip("Latest second within a successful hour that the fight can begin.")]
+        private float _bostanicaBeregoiMaximumSpawnOffsetSeconds = 55f;
+
+        [SerializeField, Min(0f)]
+        [Tooltip("Safe door-use window after the camera monitor first reveals the fight.")]
+        private float _bostanicaBeregoiDoorGraceSeconds = 2f;
 
         private Label _clockLabel;
         private Label _batteryLabel;
@@ -257,6 +315,8 @@ namespace FiveNightsAtLidl.UI
         private Image _cameraFeedImage;
         private Image _bolojanCameraImage;
         private Image _bolojanJumpscareImage;
+        private Image _officeFightImage;
+        private VisualElement _officeFightBlackoutOverlay;
         private Label _bolojanJumpscareMessageLabel;
         private Label _dorianBlenderStatusLabel;
         private Label _resultTitleLabel;
@@ -269,11 +329,15 @@ namespace FiveNightsAtLidl.UI
         private Button _cameraToggleButton;
         private Button _resultPrimaryButton;
         private Button _dorianChargeButton;
+        private Button _officeFightSprayButton;
         private AudioSource _dorianBlenderAudioSource;
+        private AudioSource _dorianAlarmAudioSource;
+        private AudioSource _officeFightSprayAudioSource;
         private float _elapsedNightSeconds;
         private float _batteryRemaining;
         private float _nextCameraFeedFlickerAt;
         private float _cameraFeedFlickerUntil;
+        private float _forcedCameraThreatFlickerUntil;
         private float _cameraFeedRevealAt;
         private float _preNightTitleRemaining;
         private float _bolojanExposureElapsed;
@@ -281,6 +345,8 @@ namespace FiveNightsAtLidl.UI
         private float _bolojanCameraBaseLeft;
         private float _bolojanCameraBaseTop;
         private float _powerFailureElapsed;
+        private float _victoryTransitionElapsed;
+        private float _victoryBlackoutInitialOpacity;
         private float _nextPowerFailureRollAt;
         private int _powerFailureRollCount;
         private int _displayedHour = -1;
@@ -299,6 +365,7 @@ namespace FiveNightsAtLidl.UI
         private bool _bolojanJumpscareEndsNight;
         private bool _jumpscareShowsMessage;
         private bool _powerFailureActive;
+        private bool _victoryTransitionActive;
         private bool _resultWasVictory;
         private bool _sellyThreatActive;
         private bool _sellyRetreatPending;
@@ -321,6 +388,13 @@ namespace FiveNightsAtLidl.UI
         private float _dorianBlenderCharge;
         private float _dorianAngerElapsed;
         private float _dorianChargePulseUntil;
+        private float _officeFightSpawnAtNightSecond;
+        private float _officeFightDoorDangerAt;
+        private int _officeFightScheduledHour;
+        private bool _officeFightThreatEnabled;
+        private bool _officeFightSpawnPending;
+        private bool _officeFightActive;
+        private int _officeFightSprayAnimationGeneration;
         private string _lossTitle = ElectricityWastedMessage;
         private string _lossMessage = "The shift ended in darkness.";
         private string _activeCameraId = BolojanCameraOneId;
@@ -353,6 +427,7 @@ namespace FiveNightsAtLidl.UI
             _bolojanJumpscareEndsNight = false;
             _jumpscareShowsMessage = false;
             _powerFailureActive = false;
+            _victoryTransitionActive = false;
             _resultWasVictory = false;
             _sellyThreatActive = true;
             _sellyRetreatPending = false;
@@ -375,11 +450,21 @@ namespace FiveNightsAtLidl.UI
             _dorianBlenderCharge = DorianMaximumCharge;
             _dorianAngerElapsed = 0f;
             _dorianChargePulseUntil = 0f;
+            _officeFightThreatEnabled = _nightNumber >= FirstOfficeFightNight;
+            _officeFightSpawnPending = false;
+            _officeFightActive = false;
+            _officeFightScheduledHour = -1;
+            _officeFightSpawnAtNightSecond = -1f;
+            _officeFightDoorDangerAt = 0f;
+            _officeFightSprayAnimationGeneration++;
+            _forcedCameraThreatFlickerUntil = 0f;
             _lossTitle = ElectricityWastedMessage;
             _lossMessage = $"Night {_nightNumber} ended in darkness.";
             _bolojanExposureElapsed = 0f;
             _bolojanJumpscareElapsed = 0f;
             _powerFailureElapsed = 0f;
+            _victoryTransitionElapsed = 0f;
+            _victoryBlackoutInitialOpacity = 0f;
             _nextPowerFailureRollAt = PowerFailureRollIntervalSeconds;
             _powerFailureRollCount = 0;
             _activeCameraId = BolojanCameraOneId;
@@ -403,6 +488,8 @@ namespace FiveNightsAtLidl.UI
         private void OnDisable()
         {
             StopDorianBlenderAudio();
+            StopDorianAlarmAudio();
+            StopOfficeFightSprayHiss();
         }
 
         private bool EnsurePanelSettings()
@@ -442,6 +529,12 @@ namespace FiveNightsAtLidl.UI
                 return;
             }
 
+            if (_victoryTransitionActive)
+            {
+                UpdateVictoryTransition(Time.unscaledDeltaTime);
+                return;
+            }
+
             if (_nightEnded)
             {
                 return;
@@ -460,8 +553,28 @@ namespace FiveNightsAtLidl.UI
             if (_powerFailureActive)
             {
                 UpdatePowerFailure(elapsedSeconds);
+                if (_bolojanJumpscareActive || _nightEnded)
+                {
+                    return;
+                }
+
+                UpdateSellyThreat(elapsedSeconds);
+                if (_bolojanJumpscareActive || _nightEnded)
+                {
+                    return;
+                }
+
+                UpdateCabralThreat(elapsedSeconds);
+                if (_bolojanJumpscareActive || _nightEnded)
+                {
+                    return;
+                }
+
+                UpdateDorianThreat(elapsedSeconds);
                 return;
             }
+
+            UpdateOfficeFightThreat();
 
             UpdateBolojanThreat(elapsedSeconds);
             if (_bolojanJumpscareActive || _nightEnded)
@@ -519,12 +632,16 @@ namespace FiveNightsAtLidl.UI
                 }
             });
 
-            if (_officeBackground != null)
+            Texture2D activeOfficeBackground = _officeFightThreatEnabled &&
+                _officeNightFourBackground != null
+                ? _officeNightFourBackground
+                : _officeBackground;
+            if (activeOfficeBackground != null)
             {
                 Image officeBackground = new Image
                 {
                     name = "office-background",
-                    image = _officeBackground,
+                    image = activeOfficeBackground,
                     scaleMode = ScaleMode.ScaleAndCrop,
                     pickingMode = PickingMode.Ignore
                 };
@@ -537,8 +654,12 @@ namespace FiveNightsAtLidl.UI
             }
 
             BuildOfficeStateLayer(root);
+            BuildOfficeFightLayer(root);
+            BuildOfficeSprayBottleForegroundLayer(root);
+            BuildOfficeFightBlackoutLayer(root);
             BuildPowerFailureDimOverlay(root);
             BuildOfficeControls(root);
+            BuildOfficeFightSprayControls(_officeControlsLayer);
 
             VisualElement hud = new VisualElement();
             hud.AddToClassList("demo-hud");
@@ -576,6 +697,7 @@ namespace FiveNightsAtLidl.UI
         private void BeginNight()
         {
             _nightStarted = true;
+            ScheduleOfficeFightForHour(0);
             if (_nightIntroOverlay != null)
             {
                 _nightIntroOverlay.style.display = DisplayStyle.None;
@@ -588,7 +710,7 @@ namespace FiveNightsAtLidl.UI
             _powerFailureDimOverlay.pickingMode = PickingMode.Ignore;
             _powerFailureDimOverlay.AddToClassList("power-failure-dim");
             _powerFailureDimOverlay.style.display = DisplayStyle.None;
-            root.Insert(2, _powerFailureDimOverlay);
+            root.Add(_powerFailureDimOverlay);
         }
 
         private void BuildBolojanJumpscare(VisualElement root)
@@ -673,16 +795,79 @@ namespace FiveNightsAtLidl.UI
             stateLayer.pickingMode = PickingMode.Ignore;
             stateLayer.AddToClassList("office-state-layer");
 
-            VisualElement leftClip = CreateOfficeStateClip("left", out _leftOfficeStateImage);
-            VisualElement rightClip = CreateOfficeStateClip("right", out _rightOfficeStateImage);
+            VisualElement leftClip = CreateOfficeStateClip(
+                "left",
+                out _leftOfficeStateImage);
+            VisualElement rightClip = CreateOfficeStateClip(
+                "right",
+                out _rightOfficeStateImage);
             stateLayer.Add(leftClip);
             stateLayer.Add(rightClip);
-            root.Insert(1, stateLayer);
+            root.Add(stateLayer);
 
             UpdateOfficeVisualState();
         }
 
-        private static VisualElement CreateOfficeStateClip(string side, out Image stateImage)
+        private void BuildOfficeFightLayer(VisualElement root)
+        {
+            _officeFightImage = new Image
+            {
+                name = "bostanica-beregoi-office-fight",
+                image = _bostanicaBeregoiOfficeFightTexture,
+                scaleMode = ScaleMode.ScaleAndCrop,
+                pickingMode = PickingMode.Ignore
+            };
+            _officeFightImage.AddToClassList("office-fight-image");
+            _officeFightImage.style.display = DisplayStyle.None;
+            root.Add(_officeFightImage);
+        }
+
+        private void BuildOfficeSprayBottleForegroundLayer(VisualElement root)
+        {
+            Image sprayBottleForeground = new Image
+            {
+                name = "office-spray-bottle-foreground",
+                image = _officeSprayBottleForegroundTexture,
+                scaleMode = ScaleMode.ScaleAndCrop,
+                pickingMode = PickingMode.Ignore
+            };
+            sprayBottleForeground.AddToClassList("office-spray-bottle-foreground");
+            sprayBottleForeground.style.display = _officeFightThreatEnabled
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+            root.Add(sprayBottleForeground);
+        }
+
+        private void BuildOfficeFightBlackoutLayer(VisualElement root)
+        {
+            _officeFightBlackoutOverlay = new VisualElement
+            {
+                name = "office-fight-blackout",
+                pickingMode = PickingMode.Ignore
+            };
+            _officeFightBlackoutOverlay.AddToClassList("office-fight-blackout");
+            _officeFightBlackoutOverlay.style.display = DisplayStyle.None;
+            root.Add(_officeFightBlackoutOverlay);
+        }
+
+        private void BuildOfficeFightSprayControls(VisualElement root)
+        {
+            _officeFightSprayButton = new Button(SprayOfficeFight)
+            {
+                name = "office-spray-button",
+                text = "FAS FAS",
+                tooltip = "Spray fas fas into the office"
+            };
+            _officeFightSprayButton.AddToClassList("office-spray-button");
+            _officeFightSprayButton.style.display = _officeFightThreatEnabled
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+            root.Add(_officeFightSprayButton);
+        }
+
+        private static VisualElement CreateOfficeStateClip(
+            string side,
+            out Image stateImage)
         {
             VisualElement clip = new VisualElement { name = $"{side}-office-state" };
             clip.pickingMode = PickingMode.Ignore;
@@ -803,6 +988,15 @@ namespace FiveNightsAtLidl.UI
                 return;
             }
 
+            bool isClosingDoor = isLeft ? !_leftDoorClosed : !_rightDoorClosed;
+            if (_officeFightActive &&
+                isClosingDoor &&
+                Time.unscaledTime >= _officeFightDoorDangerAt)
+            {
+                TriggerOfficeFightJumpscare();
+                return;
+            }
+
             if (isLeft)
             {
                 _leftDoorClosed = !_leftDoorClosed;
@@ -814,6 +1008,192 @@ namespace FiveNightsAtLidl.UI
 
             RefreshDoorButtonStates();
             UpdateOfficeVisualState();
+        }
+
+        private void UpdateOfficeFightThreat()
+        {
+            if (!_officeFightThreatEnabled ||
+                !_officeFightSpawnPending ||
+                _officeFightActive ||
+                _nightEnded ||
+                _powerFailureActive ||
+                !IsCameraDashboardOpen())
+            {
+                return;
+            }
+
+            if (_elapsedNightSeconds < _officeFightSpawnAtNightSecond)
+            {
+                return;
+            }
+
+            _officeFightSpawnPending = false;
+            SetOfficeFightActive(true);
+        }
+
+        private void ScheduleOfficeFightForHour(int hour)
+        {
+            if (_officeFightScheduledHour == hour)
+            {
+                return;
+            }
+
+            _officeFightScheduledHour = hour;
+            _officeFightSpawnPending = false;
+            _officeFightSpawnAtNightSecond = -1f;
+
+            if (!_officeFightThreatEnabled ||
+                _officeFightActive ||
+                hour < 0 ||
+                hour >= FinalHour ||
+                Random.value >= Mathf.Clamp01(_bostanicaBeregoiHourlyChance))
+            {
+                return;
+            }
+
+            float maximumOffset = Mathf.Clamp(
+                _bostanicaBeregoiMaximumSpawnOffsetSeconds,
+                0f,
+                SecondsPerGameHour - 0.01f);
+            float minimumOffset = Mathf.Clamp(
+                _bostanicaBeregoiMinimumSpawnOffsetSeconds,
+                0f,
+                maximumOffset);
+            float spawnOffset = Random.Range(minimumOffset, maximumOffset);
+            _officeFightSpawnAtNightSecond = hour * SecondsPerGameHour + spawnOffset;
+            _officeFightSpawnPending = true;
+        }
+
+        private void SetOfficeFightActive(bool active)
+        {
+            _officeFightSprayAnimationGeneration++;
+            ResetOfficeFightBlackout();
+            if (!active)
+            {
+                StopOfficeFightSprayHiss();
+            }
+
+            _officeFightActive = _officeFightThreatEnabled && active;
+            _officeFightDoorDangerAt = _officeFightActive
+                ? float.PositiveInfinity
+                : 0f;
+            if (_officeFightImage != null)
+            {
+                _officeFightImage.image = _bostanicaBeregoiOfficeFightTexture;
+                _officeFightImage.style.display = _officeFightActive
+                    ? DisplayStyle.Flex
+                    : DisplayStyle.None;
+            }
+
+            _officeFightSprayButton?.EnableInClassList(
+                "office-spray-button-threat",
+                _officeFightActive);
+        }
+
+        private void SprayOfficeFight()
+        {
+            if (_nightEnded || _powerFailureActive)
+            {
+                return;
+            }
+
+            PlayOfficeFightSprayHiss();
+            if (!_officeFightActive)
+            {
+                return;
+            }
+
+            _officeFightActive = false;
+            _officeFightSprayButton?.EnableInClassList(
+                "office-spray-button-threat",
+                false);
+            if (_officeFightImage == null || _officeFightBlackoutOverlay == null)
+            {
+                if (_officeFightImage != null)
+                {
+                    _officeFightImage.style.display = DisplayStyle.None;
+                }
+
+                return;
+            }
+
+            int animationGeneration = ++_officeFightSprayAnimationGeneration;
+            ResetOfficeFightBlackout();
+            _officeFightBlackoutOverlay.style.display = DisplayStyle.Flex;
+            ScheduleOfficeFightBlackoutFrame(animationGeneration, 55L, 0.38f);
+            ScheduleOfficeFightBlackoutFrame(
+                animationGeneration,
+                105L,
+                0.06f,
+                showsShockedFight: true);
+            ScheduleOfficeFightBlackoutFrame(animationGeneration, 260L, 0.52f);
+            ScheduleOfficeFightBlackoutFrame(animationGeneration, 330L, 0.08f);
+            ScheduleOfficeFightBlackoutFrame(animationGeneration, 400L, 0.85f);
+            ScheduleOfficeFightBlackoutFrame(animationGeneration, 460L, 0.22f);
+            ScheduleOfficeFightBlackoutFrame(
+                animationGeneration,
+                530L,
+                1f,
+                hidesFight: true);
+            ScheduleOfficeFightBlackoutFrame(animationGeneration, 650L, 0.35f);
+            ScheduleOfficeFightBlackoutFrame(animationGeneration, 710L, 0.9f);
+            ScheduleOfficeFightBlackoutFrame(animationGeneration, 780L, 0.08f);
+            ScheduleOfficeFightBlackoutFrame(animationGeneration, 850L, 0.62f);
+            ScheduleOfficeFightBlackoutFrame(animationGeneration, 920L, 0f);
+            ScheduleOfficeFightBlackoutFrame(
+                animationGeneration,
+                OfficeFightBlackoutEndMilliseconds,
+                0f,
+                completesAnimation: true);
+        }
+
+        private void ScheduleOfficeFightBlackoutFrame(
+            int animationGeneration,
+            long delayMilliseconds,
+            float opacity,
+            bool showsShockedFight = false,
+            bool hidesFight = false,
+            bool completesAnimation = false)
+        {
+            _officeFightBlackoutOverlay.schedule.Execute(() =>
+            {
+                if (animationGeneration != _officeFightSprayAnimationGeneration ||
+                    _officeFightBlackoutOverlay == null)
+                {
+                    return;
+                }
+
+                _officeFightBlackoutOverlay.style.opacity = opacity;
+                if (showsShockedFight && _officeFightImage != null)
+                {
+                    _officeFightImage.image = _bostanicaBeregoiShockedTexture != null
+                        ? _bostanicaBeregoiShockedTexture
+                        : _bostanicaBeregoiOfficeFightTexture;
+                }
+
+                if (hidesFight && _officeFightImage != null)
+                {
+                    _officeFightImage.style.display = DisplayStyle.None;
+                    _officeFightImage.image = _bostanicaBeregoiOfficeFightTexture;
+                }
+
+                if (completesAnimation)
+                {
+                    ResetOfficeFightBlackout();
+                    StopOfficeFightSprayHiss();
+                }
+            }).StartingIn(delayMilliseconds);
+        }
+
+        private void ResetOfficeFightBlackout()
+        {
+            if (_officeFightBlackoutOverlay == null)
+            {
+                return;
+            }
+
+            _officeFightBlackoutOverlay.style.opacity = 0f;
+            _officeFightBlackoutOverlay.style.display = DisplayStyle.None;
         }
 
         private void RefreshDoorButtonStates()
@@ -1288,7 +1668,10 @@ namespace FiveNightsAtLidl.UI
                 _cabralStaticCameraIds.Clear();
             }
 
-            bool hasThreatMovementStatic = hasSellyMovementStatic || hasCabralMovementStatic;
+            bool hasForcedThreatFlicker = now < _forcedCameraThreatFlickerUntil;
+            bool hasThreatMovementStatic = hasSellyMovementStatic ||
+                hasCabralMovementStatic ||
+                hasForcedThreatFlicker;
 
             float staticJitterX = hasThreatMovementStatic ? Random.Range(-0.22f, 0.22f) : 0f;
             float staticJitterY = hasThreatMovementStatic ? Random.Range(-0.14f, 0.14f) : 0f;
@@ -1306,12 +1689,12 @@ namespace FiveNightsAtLidl.UI
             bool isFlickering = now < _cameraFeedFlickerUntil;
             float quietNoise = Mathf.PerlinNoise(now * 7.3f, 0.37f);
             _cameraFeedImage.style.opacity = hasThreatMovementStatic
-                ? Random.Range(0.87f, 0.96f)
+                ? Random.Range(0.28f, 0.76f)
                 : isFlickering
                 ? Random.Range(0.82f, 0.91f)
                 : 0.96f + (quietNoise - 0.5f) * 0.025f;
             _cameraFlickerOverlay.style.opacity = hasThreatMovementStatic
-                ? Random.Range(0.055f, 0.115f)
+                ? Random.Range(0.42f, 0.88f)
                 : isFlickering
                 ? 0.09f
                 : 0.008f + quietNoise * 0.015f;
@@ -1329,10 +1712,24 @@ namespace FiveNightsAtLidl.UI
                 _bolojanCameraImage.style.top = new Length(
                     _bolojanCameraBaseTop + threatDriftY,
                     LengthUnit.Percent);
-                _bolojanCameraImage.style.opacity = isFlickering
+                _bolojanCameraImage.style.opacity = hasThreatMovementStatic
+                    ? Random.Range(0.24f, 0.7f)
+                    : isFlickering
                     ? Random.Range(0.84f, 0.94f)
                     : 0.985f + quietNoise * 0.015f;
             }
+        }
+
+        private void TriggerCameraThreatFlicker()
+        {
+            if (!_cameraDashboardOpen || _cameraFeedLoading || !_cameraFeedActive)
+            {
+                return;
+            }
+
+            _forcedCameraThreatFlickerUntil = Mathf.Max(
+                _forcedCameraThreatFlickerUntil,
+                Time.unscaledTime + ThreatCameraFlickerDurationSeconds);
         }
 
         private void ShowCameraDashboard()
@@ -1362,6 +1759,12 @@ namespace FiveNightsAtLidl.UI
             _dorianChargeHeld = false;
             DismissBolojan();
             _cameraDashboardOpen = false;
+            if (_officeFightActive && float.IsPositiveInfinity(_officeFightDoorDangerAt))
+            {
+                _officeFightDoorDangerAt = Time.unscaledTime +
+                    Mathf.Max(0f, _bostanicaBeregoiDoorGraceSeconds);
+            }
+
             _cameraDashboard.style.display = DisplayStyle.None;
             _officeControlsLayer.style.display = DisplayStyle.Flex;
             _officeControlsLayer.BringToFront();
@@ -1411,7 +1814,7 @@ namespace FiveNightsAtLidl.UI
             }
 
             int aiLevel = GetSellyAiLevel();
-            int roll = Random.Range(1, 21);
+            int roll = Random.Range(1, MaximumAiRoll + 1);
             if (roll > aiLevel)
             {
                 LogSellyState($"Movement roll {roll} failed against AI {aiLevel}.");
@@ -1618,7 +2021,7 @@ namespace FiveNightsAtLidl.UI
         {
             if (_sellyAiOverride >= 0)
             {
-                return _sellyAiOverride;
+                return Mathf.Clamp(_sellyAiOverride, 0, MaximumAiRoll);
             }
 
             int baseAi;
@@ -1641,7 +2044,10 @@ namespace FiveNightsAtLidl.UI
                     baseAi = 10;
                     break;
                 default:
-                    baseAi = Mathf.Clamp(10 + (_nightNumber - 6) * 2, 0, 20);
+                    baseAi = Mathf.Clamp(
+                        10 + (_nightNumber - 6) * 2,
+                        0,
+                        MaximumAiRoll);
                     break;
             }
 
@@ -1661,7 +2067,12 @@ namespace FiveNightsAtLidl.UI
                 hourBonus++;
             }
 
-            return Mathf.Clamp(baseAi + hourBonus, 0, 20);
+            int nightFiveReduction = _nightNumber == 5 ? 1 : 0;
+            return Mathf.Clamp(
+                baseAi + hourBonus - AutomaticAggressionReduction -
+                nightFiveReduction,
+                0,
+                MaximumAiRoll);
         }
 
         private static string GetSellyCameraId(int routeIndex)
@@ -1723,7 +2134,7 @@ namespace FiveNightsAtLidl.UI
         private void TryAdvanceCabral()
         {
             int aiLevel = GetCabralAiLevel();
-            int roll = Random.Range(1, 21);
+            int roll = Random.Range(1, MaximumAiRoll + 1);
             if (roll > aiLevel)
             {
                 LogCabralState($"Movement roll {roll} failed against AI {aiLevel}.");
@@ -1895,7 +2306,7 @@ namespace FiveNightsAtLidl.UI
         {
             if (_cabralAiOverride >= 0)
             {
-                return _cabralAiOverride;
+                return Mathf.Clamp(_cabralAiOverride, 0, MaximumAiRoll);
             }
 
             int baseAi;
@@ -1920,7 +2331,10 @@ namespace FiveNightsAtLidl.UI
                     baseAi = 12;
                     break;
                 default:
-                    baseAi = Mathf.Clamp(12 + (_nightNumber - 6) * 2, 0, 20);
+                    baseAi = Mathf.Clamp(
+                        12 + (_nightNumber - 6) * 2,
+                        0,
+                        MaximumAiRoll);
                     break;
             }
 
@@ -1935,7 +2349,12 @@ namespace FiveNightsAtLidl.UI
                 hourBonus++;
             }
 
-            return Mathf.Clamp(baseAi + hourBonus, 0, 20);
+            int nightFiveReduction = _nightNumber == 5 ? 1 : 0;
+            return Mathf.Clamp(
+                baseAi + hourBonus - AutomaticAggressionReduction -
+                nightFiveReduction,
+                0,
+                MaximumAiRoll);
         }
 
         private static string GetCabralCameraId(int routeIndex)
@@ -1971,6 +2390,7 @@ namespace FiveNightsAtLidl.UI
             if (!_dorianThreatActive)
             {
                 StopDorianBlenderAudio();
+                StopDorianAlarmAudio();
                 return;
             }
 
@@ -2008,7 +2428,7 @@ namespace FiveNightsAtLidl.UI
             if (GetDorianVisualStage() != previousStage)
             {
                 RefreshActiveCameraThreatTexture();
-                _cameraFeedFlickerUntil = Time.unscaledTime + 0.12f;
+                TriggerCameraThreatFlicker();
             }
 
             RefreshDorianBlenderControls();
@@ -2049,6 +2469,7 @@ namespace FiveNightsAtLidl.UI
             if (GetDorianVisualStage() != previousStage)
             {
                 RefreshActiveCameraThreatTexture();
+                TriggerCameraThreatFlicker();
             }
 
             RefreshDorianBlenderControls();
@@ -2074,7 +2495,10 @@ namespace FiveNightsAtLidl.UI
                 _dorianMaximumAggressionDrainSeconds,
                 1f,
                 nightTwoDuration);
-            float aggression = Mathf.InverseLerp(1f, 8f, GetDorianAiLevel());
+            float aggression = Mathf.InverseLerp(
+                1f,
+                DorianMaximumAggressionAi,
+                GetDorianAiLevel());
             return Mathf.Lerp(nightTwoDuration, maximumAggressionDuration, aggression);
         }
 
@@ -2082,7 +2506,7 @@ namespace FiveNightsAtLidl.UI
         {
             if (_dorianAiOverride >= 0)
             {
-                return _dorianAiOverride;
+                return Mathf.Clamp(_dorianAiOverride, 0, MaximumAiRoll);
             }
 
             int baseAi;
@@ -2107,7 +2531,10 @@ namespace FiveNightsAtLidl.UI
                     baseAi = 6;
                     break;
                 default:
-                    baseAi = Mathf.Clamp(6 + (_nightNumber - 6) * 2, 0, 20);
+                    baseAi = Mathf.Clamp(
+                        6 + (_nightNumber - 6) * 2,
+                        0,
+                        MaximumAiRoll);
                     break;
             }
 
@@ -2122,7 +2549,10 @@ namespace FiveNightsAtLidl.UI
                 hourBonus++;
             }
 
-            return Mathf.Clamp(baseAi + hourBonus, 0, 20);
+            return Mathf.Clamp(
+                baseAi + hourBonus - AutomaticAggressionReduction,
+                0,
+                MaximumAiRoll);
         }
 
         private int GetDorianVisualStage()
@@ -2215,7 +2645,12 @@ namespace FiveNightsAtLidl.UI
 
         private void ConfigureDorianBlenderAudio()
         {
-            _dorianBlenderAudioSource = GetComponent<AudioSource>();
+            AudioSource[] existingSources = GetComponents<AudioSource>();
+            if (_dorianBlenderAudioSource == null && existingSources.Length > 0)
+            {
+                _dorianBlenderAudioSource = existingSources[0];
+            }
+
             if (_dorianBlenderAudioSource == null)
             {
                 _dorianBlenderAudioSource = gameObject.AddComponent<AudioSource>();
@@ -2226,16 +2661,69 @@ namespace FiveNightsAtLidl.UI
             _dorianBlenderAudioSource.spatialBlend = 0f;
             _dorianBlenderAudioSource.volume = _dorianBlenderVolume;
             _dorianBlenderAudioSource.clip = _dorianBlenderLoopClip;
+
+            if (_dorianAlarmAudioSource == null)
+            {
+                for (int sourceIndex = 0; sourceIndex < existingSources.Length; sourceIndex++)
+                {
+                    if (existingSources[sourceIndex] != _dorianBlenderAudioSource)
+                    {
+                        _dorianAlarmAudioSource = existingSources[sourceIndex];
+                        break;
+                    }
+                }
+            }
+
+            if (_dorianAlarmAudioSource == null)
+            {
+                _dorianAlarmAudioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            _dorianAlarmAudioSource.playOnAwake = false;
+            _dorianAlarmAudioSource.loop = true;
+            _dorianAlarmAudioSource.spatialBlend = 0f;
+            _dorianAlarmAudioSource.volume = _dorianAlarmVolume;
+            _dorianAlarmAudioSource.clip = _dorianAlarmLoopClip;
+
+            if (_officeFightSprayAudioSource == null)
+            {
+                _officeFightSprayAudioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            _officeFightSprayAudioSource.playOnAwake = false;
+            _officeFightSprayAudioSource.loop = false;
+            _officeFightSprayAudioSource.spatialBlend = 0f;
+            _officeFightSprayAudioSource.volume = _officeFightSprayHissVolume;
+            _officeFightSprayAudioSource.clip = _officeFightSprayHissClip;
         }
 
-        private void UpdateDorianBlenderAudio()
+        private void PlayOfficeFightSprayHiss()
         {
-            if (_dorianBlenderAudioSource == null)
+            if (_officeFightSprayAudioSource == null ||
+                _officeFightSprayHissClip == null)
             {
                 return;
             }
 
+            _officeFightSprayAudioSource.Stop();
+            _officeFightSprayAudioSource.clip = _officeFightSprayHissClip;
+            _officeFightSprayAudioSource.volume = _officeFightSprayHissVolume;
+            _officeFightSprayAudioSource.Play();
+        }
+
+        private void StopOfficeFightSprayHiss()
+        {
+            if (_officeFightSprayAudioSource != null &&
+                _officeFightSprayAudioSource.isPlaying)
+            {
+                _officeFightSprayAudioSource.Stop();
+            }
+        }
+
+        private void UpdateDorianBlenderAudio()
+        {
             bool shouldPlay = _dorianBlenderLoopClip != null &&
+                _dorianBlenderAudioSource != null &&
                 _dorianThreatActive &&
                 _dorianBlenderCharge > 0f &&
                 _nightStarted &&
@@ -2248,19 +2736,22 @@ namespace FiveNightsAtLidl.UI
             if (!shouldPlay)
             {
                 StopDorianBlenderAudio();
-                return;
+            }
+            else
+            {
+                if (_dorianBlenderAudioSource.clip != _dorianBlenderLoopClip)
+                {
+                    _dorianBlenderAudioSource.clip = _dorianBlenderLoopClip;
+                }
+
+                _dorianBlenderAudioSource.volume = _dorianBlenderVolume;
+                if (!_dorianBlenderAudioSource.isPlaying)
+                {
+                    _dorianBlenderAudioSource.Play();
+                }
             }
 
-            if (_dorianBlenderAudioSource.clip != _dorianBlenderLoopClip)
-            {
-                _dorianBlenderAudioSource.clip = _dorianBlenderLoopClip;
-            }
-
-            _dorianBlenderAudioSource.volume = _dorianBlenderVolume;
-            if (!_dorianBlenderAudioSource.isPlaying)
-            {
-                _dorianBlenderAudioSource.Play();
-            }
+            UpdateDorianAlarmAudio();
         }
 
         private void StopDorianBlenderAudio()
@@ -2268,6 +2759,42 @@ namespace FiveNightsAtLidl.UI
             if (_dorianBlenderAudioSource != null && _dorianBlenderAudioSource.isPlaying)
             {
                 _dorianBlenderAudioSource.Stop();
+            }
+        }
+
+        private void UpdateDorianAlarmAudio()
+        {
+            bool shouldPlay = _dorianAlarmLoopClip != null &&
+                _dorianAlarmAudioSource != null &&
+                _dorianThreatActive &&
+                _nightStarted &&
+                !_nightEnded &&
+                !_powerFailureActive &&
+                !_bolojanJumpscareActive &&
+                GetDorianVisualStage() == 2;
+            if (!shouldPlay)
+            {
+                StopDorianAlarmAudio();
+                return;
+            }
+
+            if (_dorianAlarmAudioSource.clip != _dorianAlarmLoopClip)
+            {
+                _dorianAlarmAudioSource.clip = _dorianAlarmLoopClip;
+            }
+
+            _dorianAlarmAudioSource.volume = _dorianAlarmVolume;
+            if (!_dorianAlarmAudioSource.isPlaying)
+            {
+                _dorianAlarmAudioSource.Play();
+            }
+        }
+
+        private void StopDorianAlarmAudio()
+        {
+            if (_dorianAlarmAudioSource != null && _dorianAlarmAudioSource.isPlaying)
+            {
+                _dorianAlarmAudioSource.Stop();
             }
         }
 
@@ -2282,6 +2809,7 @@ namespace FiveNightsAtLidl.UI
             _dorianChargeHeld = false;
             _roomsOccupiedByOtherThreats.Remove(DorianCameraId);
             StopDorianBlenderAudio();
+            StopDorianAlarmAudio();
             RefreshDorianBlenderControls();
             RefreshActiveCameraThreatTexture();
         }
@@ -2324,6 +2852,7 @@ namespace FiveNightsAtLidl.UI
             _bolojanCameraImage.style.top = new Length(
                 _bolojanCameraBaseTop,
                 LengthUnit.Percent);
+            TriggerCameraThreatFlicker();
         }
 
         private void UpdateBolojanThreat(float elapsedSeconds)
@@ -2351,12 +2880,18 @@ namespace FiveNightsAtLidl.UI
 
         private void DismissBolojan()
         {
+            bool wasVisible = _bolojanVisible;
             _bolojanVisible = false;
             _bolojanExposureElapsed = 0f;
             if (_bolojanCameraImage != null)
             {
                 _bolojanCameraImage.image = null;
                 _bolojanCameraImage.style.display = DisplayStyle.None;
+            }
+
+            if (wasVisible)
+            {
+                TriggerCameraThreatFlicker();
             }
         }
 
@@ -2374,6 +2909,7 @@ namespace FiveNightsAtLidl.UI
 
         private void TriggerPowerFailureJumpscare()
         {
+            SetOfficeFightActive(false);
             TriggerJumpscare(
                 _bolojanJumpscareTexture,
                 ElectricityWastedMessage,
@@ -2386,6 +2922,7 @@ namespace FiveNightsAtLidl.UI
 
         private void TriggerSellyJumpscare()
         {
+            SetOfficeFightActive(false);
             DeactivateSellyThreat();
             DeactivateCabralThreat();
             DeactivateDorianThreat();
@@ -2401,6 +2938,7 @@ namespace FiveNightsAtLidl.UI
 
         private void TriggerCabralJumpscare()
         {
+            SetOfficeFightActive(false);
             DeactivateCabralThreat();
             DeactivateSellyThreat();
             DeactivateDorianThreat();
@@ -2416,6 +2954,7 @@ namespace FiveNightsAtLidl.UI
 
         private void TriggerDorianJumpscare()
         {
+            SetOfficeFightActive(false);
             DeactivateDorianThreat();
             DeactivateSellyThreat();
             DeactivateCabralThreat();
@@ -2427,6 +2966,22 @@ namespace FiveNightsAtLidl.UI
                 appliesBatteryTax: false,
                 lossTitle: DorianLossTitle,
                 lossMessage: DorianLossMessage);
+        }
+
+        private void TriggerOfficeFightJumpscare()
+        {
+            SetOfficeFightActive(false);
+            DeactivateSellyThreat();
+            DeactivateCabralThreat();
+            DeactivateDorianThreat();
+            TriggerJumpscare(
+                _bostanicaBeregoiJumpscareTexture,
+                string.Empty,
+                showsMessage: false,
+                endsNight: true,
+                appliesBatteryTax: false,
+                lossTitle: OfficeFightLossTitle,
+                lossMessage: OfficeFightLossMessage);
         }
 
         private void TriggerJumpscare(
@@ -2464,6 +3019,7 @@ namespace FiveNightsAtLidl.UI
             _cameraDashboardOpen = false;
             _dorianChargeHeld = false;
             StopDorianBlenderAudio();
+            StopDorianAlarmAudio();
             _cameraDashboard.style.display = DisplayStyle.None;
             _officeControlsLayer.style.display = DisplayStyle.None;
 
@@ -2548,9 +3104,6 @@ namespace FiveNightsAtLidl.UI
             _nextPowerFailureRollAt = PowerFailureRollIntervalSeconds;
             _powerFailureRollCount = 0;
             DismissBolojan();
-            DeactivateSellyThreat();
-            DeactivateCabralThreat();
-            DeactivateDorianThreat();
 
             _cameraDashboardOpen = false;
             _cameraDashboard.style.display = DisplayStyle.None;
@@ -2566,6 +3119,7 @@ namespace FiveNightsAtLidl.UI
             _officeControlsLayer.style.display = DisplayStyle.Flex;
             _powerFailureDimOverlay.style.opacity = 0.82f;
             _powerFailureDimOverlay.style.display = DisplayStyle.Flex;
+            TryPowerFailureJumpscare();
         }
 
         private void UpdatePowerFailure(float elapsedSeconds)
@@ -2576,16 +3130,27 @@ namespace FiveNightsAtLidl.UI
 
             while (_powerFailureElapsed >= _nextPowerFailureRollAt)
             {
-                _powerFailureRollCount++;
-                float attackChance = Mathf.Clamp01(
-                    _powerFailureRollCount * PowerFailureChanceStep);
                 _nextPowerFailureRollAt += PowerFailureRollIntervalSeconds;
-                if (Random.value < attackChance)
+                if (TryPowerFailureJumpscare())
                 {
-                    TriggerPowerFailureJumpscare();
                     return;
                 }
             }
+        }
+
+        private bool TryPowerFailureJumpscare()
+        {
+            _powerFailureRollCount++;
+            float attackChance = Mathf.Clamp01(
+                PowerFailureInitialChance +
+                (_powerFailureRollCount - 1) * PowerFailureChanceStep);
+            if (Random.value >= attackChance)
+            {
+                return false;
+            }
+
+            TriggerPowerFailureJumpscare();
+            return true;
         }
 
         private void SetOfficeControlsEnabled(bool enabled)
@@ -2599,20 +3164,66 @@ namespace FiveNightsAtLidl.UI
 
         private void CompleteNight()
         {
-            if (_nightEnded)
+            if (_nightEnded || _victoryTransitionActive)
             {
                 return;
             }
 
             _nightEnded = true;
+            _victoryTransitionActive = true;
+            _victoryTransitionElapsed = 0f;
             _powerFailureActive = false;
+            _officeFightSpawnPending = false;
+            SetOfficeFightActive(false);
             DismissBolojan();
             DeactivateSellyThreat();
             DeactivateCabralThreat();
             DeactivateDorianThreat();
             _cameraDashboardOpen = false;
             _cameraDashboard.style.display = DisplayStyle.None;
+            _leftLightOn = false;
+            _rightLightOn = false;
+            _leftDoorClosed = false;
+            _rightDoorClosed = false;
+            RefreshLightButtonStates();
+            RefreshDoorButtonStates();
+            UpdateOfficeVisualState();
             SetOfficeControlsEnabled(false);
+            _officeControlsLayer.style.display = DisplayStyle.Flex;
+
+            _victoryBlackoutInitialOpacity = 0f;
+            _powerFailureDimOverlay.style.opacity = _victoryBlackoutInitialOpacity;
+            _powerFailureDimOverlay.style.display = DisplayStyle.Flex;
+            _powerFailureDimOverlay.BringToFront();
+        }
+
+        private void UpdateVictoryTransition(float elapsedSeconds)
+        {
+            _victoryTransitionElapsed += elapsedSeconds;
+            if (_victoryTransitionElapsed <= VictoryLightsOutHoldSeconds)
+            {
+                _powerFailureDimOverlay.style.opacity = _victoryBlackoutInitialOpacity;
+                return;
+            }
+
+            float fadeElapsed = _victoryTransitionElapsed - VictoryLightsOutHoldSeconds;
+            float fadeProgress = Mathf.Clamp01(
+                fadeElapsed / VictoryBlackoutFadeSeconds);
+            float smoothFade = fadeProgress * fadeProgress * (3f - 2f * fadeProgress);
+            float unstableFlicker = fadeProgress < 1f
+                ? (Mathf.PerlinNoise(Time.unscaledTime * 10.5f, 0.43f) - 0.5f) *
+                    0.14f * (1f - fadeProgress)
+                : 0f;
+            _powerFailureDimOverlay.style.opacity = Mathf.Clamp01(
+                Mathf.Lerp(_victoryBlackoutInitialOpacity, 1f, smoothFade) +
+                unstableFlicker);
+
+            if (fadeProgress < 1f)
+            {
+                return;
+            }
+
+            _victoryTransitionActive = false;
             MenuPreferences.CompleteNight(_nightNumber);
             ShowResultOverlay(victory: true);
         }
@@ -2705,7 +3316,14 @@ namespace FiveNightsAtLidl.UI
             Texture2D dorianIrritatedTexture,
             Texture2D dorianAngryTexture,
             Texture2D dorianJumpscareTexture,
-            AudioClip dorianBlenderLoopClip)
+            AudioClip dorianBlenderLoopClip,
+            AudioClip dorianAlarmLoopClip,
+            Texture2D bostanicaBeregoiOfficeFightTexture,
+            Texture2D bostanicaBeregoiShockedTexture,
+            Texture2D bostanicaBeregoiJumpscareTexture,
+            Texture2D officeSprayBottleForegroundTexture,
+            AudioClip officeFightSprayHissClip,
+            Texture2D officeNightFourBackground)
         {
             _fallbackPanelSettings = panelSettings;
             _officeBackground = officeBackground;
@@ -2740,6 +3358,13 @@ namespace FiveNightsAtLidl.UI
             _dorianAngryTexture = dorianAngryTexture;
             _dorianJumpscareTexture = dorianJumpscareTexture;
             _dorianBlenderLoopClip = dorianBlenderLoopClip;
+            _dorianAlarmLoopClip = dorianAlarmLoopClip;
+            _bostanicaBeregoiOfficeFightTexture = bostanicaBeregoiOfficeFightTexture;
+            _bostanicaBeregoiShockedTexture = bostanicaBeregoiShockedTexture;
+            _bostanicaBeregoiJumpscareTexture = bostanicaBeregoiJumpscareTexture;
+            _officeSprayBottleForegroundTexture = officeSprayBottleForegroundTexture;
+            _officeFightSprayHissClip = officeFightSprayHissClip;
+            _officeNightFourBackground = officeNightFourBackground;
         }
 
         private void UpdateClock(bool force)
@@ -2753,9 +3378,17 @@ namespace FiveNightsAtLidl.UI
                 return;
             }
 
+            int previousHour = _displayedHour;
             _displayedHour = completedHours;
             int clockHour = completedHours == 0 ? 12 : completedHours;
             _clockLabel.text = $"{clockHour} AM";
+
+            if (_nightStarted &&
+                completedHours != previousHour &&
+                completedHours < FinalHour)
+            {
+                ScheduleOfficeFightForHour(completedHours);
+            }
         }
 
         private void DrainBattery(float elapsedSeconds)

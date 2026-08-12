@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &302293633
+--- !u!1 &239382726
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,9 +127,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 302293636}
-  - component: {fileID: 302293635}
-  - component: {fileID: 302293634}
+  - component: {fileID: 239382729}
+  - component: {fileID: 239382728}
+  - component: {fileID: 239382727}
   m_Layer: 0
   m_Name: Main Gameplay
   m_TagString: Untagged
@@ -137,13 +137,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &302293634
+--- !u!114 &239382727
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 302293633}
+  m_GameObject: {fileID: 239382726}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 261d4760e95a248cdb89059c5a633c81, type: 3}
@@ -152,6 +152,7 @@ MonoBehaviour:
   _nightNumber: 1
   _fallbackPanelSettings: {fileID: 11400000, guid: 2bd33264763d74462a7c9201ea703d46, type: 2}
   _officeBackground: {fileID: 2800000, guid: 02a7b3ea1803f4981a30ec6d684a3a84, type: 3}
+  _officeNightFourBackground: {fileID: 2800000, guid: d2c4a4f7c6ba4c00a8bb85d52dabc409, type: 3}
   _leftLightBackground: {fileID: 2800000, guid: 201c9d1a3d42b4694aae8953f4ac9161, type: 3}
   _rightLightBackground: {fileID: 2800000, guid: 19094322c053340b480f3ccbbb34eaab, type: 3}
   _leftDoorBackground: {fileID: 2800000, guid: 6e9e8a5cf04a04ab3b0824c64b6af956, type: 3}
@@ -197,19 +198,31 @@ MonoBehaviour:
   _dorianAngryTexture: {fileID: 2800000, guid: a8bac6747c764f83862af2edfd32b8dd, type: 3}
   _dorianJumpscareTexture: {fileID: 2800000, guid: 67e44b461794423886fff69b04d04a8b, type: 3}
   _dorianBlenderLoopClip: {fileID: 8300000, guid: 4d48ca3d7d804e2597f1dfca0d2cdf2b, type: 3}
+  _dorianAlarmLoopClip: {fileID: 8300000, guid: 3d7a242e41b546ba8628ff4c3f745cc1, type: 3}
   _dorianFullChargeSeconds: 5
-  _dorianNightTwoDrainSeconds: 50
-  _dorianMaximumAggressionDrainSeconds: 16.67
+  _dorianNightTwoDrainSeconds: 55
+  _dorianMaximumAggressionDrainSeconds: 18.33
   _dorianAngerStageSeconds: 5
   _dorianBlenderVolume: 0.16
+  _dorianAlarmVolume: 0.22
   _dorianAiOverride: -1
---- !u!114 &302293635
+  _bostanicaBeregoiOfficeFightTexture: {fileID: 2800000, guid: 7a06d2e5c7d74bb981c786aa404bc8dc, type: 3}
+  _bostanicaBeregoiShockedTexture: {fileID: 2800000, guid: a4e7c37a91e64cf0ae7e4be4dd1c04db, type: 3}
+  _bostanicaBeregoiJumpscareTexture: {fileID: 2800000, guid: 21e5c1b34b534edda0c094ef08dfdcad, type: 3}
+  _officeSprayBottleForegroundTexture: {fileID: 2800000, guid: b6713918f6754ab68b6dcc9f08311c43, type: 3}
+  _officeFightSprayHissClip: {fileID: 8300000, guid: 9bf85a4c2c8344dfaabbc3ae8de76f49, type: 3}
+  _officeFightSprayHissVolume: 0.32
+  _bostanicaBeregoiHourlyChance: 0.5
+  _bostanicaBeregoiMinimumSpawnOffsetSeconds: 3
+  _bostanicaBeregoiMaximumSpawnOffsetSeconds: 55
+  _bostanicaBeregoiDoorGraceSeconds: 2
+--- !u!114 &239382728
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 302293633}
+  m_GameObject: {fileID: 239382726}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
@@ -226,13 +239,13 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!4 &302293636
+--- !u!4 &239382729
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 302293633}
+  m_GameObject: {fileID: 239382726}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -241,7 +254,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1072241810
+--- !u!1 &667639651
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -249,9 +262,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1072241813}
-  - component: {fileID: 1072241812}
-  - component: {fileID: 1072241811}
+  - component: {fileID: 667639654}
+  - component: {fileID: 667639653}
+  - component: {fileID: 667639652}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -259,21 +272,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1072241811
+--- !u!81 &667639652
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1072241810}
+  m_GameObject: {fileID: 667639651}
   m_Enabled: 1
---- !u!20 &1072241812
+--- !u!20 &667639653
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1072241810}
+  m_GameObject: {fileID: 667639651}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -318,13 +331,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &1072241813
+--- !u!4 &667639654
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1072241810}
+  m_GameObject: {fileID: 667639651}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -337,5 +350,5 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1072241813}
-  - {fileID: 302293636}
+  - {fileID: 667639654}
+  - {fileID: 239382729}

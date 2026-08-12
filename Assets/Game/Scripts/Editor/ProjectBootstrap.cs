@@ -83,6 +83,20 @@ namespace FiveNightsAtLidl.Editor
             "Assets/Game/Art/Characters/Dorian/Dorian_Jumpscare.png";
         private const string DorianBlenderLoopPath =
             "Assets/Game/Audio/SFX/Dorian_BlenderLoop.wav";
+        private const string DorianAlarmLoopPath =
+            "Assets/Game/Audio/SFX/Dorian_AlarmLoop.wav";
+        private const string BostanicaBeregoiOfficeFightPath =
+            "Assets/Game/Art/Characters/BostanicaBeregoi/BostanicaBeregoi_OfficeFightForeground.png";
+        private const string BostanicaBeregoiShockedPath =
+            "Assets/Game/Art/Characters/BostanicaBeregoi/BostanicaBeregoi_OfficeFightShockedForeground.png";
+        private const string BostanicaBeregoiJumpscarePath =
+            "Assets/Game/Art/Characters/BostanicaBeregoi/BostanicaBeregoi_Jumpscare.png";
+        private const string OfficeSprayBottleForegroundPath =
+            "Assets/Game/Art/Characters/BostanicaBeregoi/SprayBottle_OfficeForeground.png";
+        private const string OfficeFightSprayHissPath =
+            "Assets/Game/Audio/SFX/FasFas_SprayHiss.wav";
+        private const string OfficeNightFourBackgroundPath =
+            "Assets/Game/Art/Backgrounds/OfficeBaseNight4_SprayIntegrated.png";
         private const string MenuRenderTexturePath = "Assets/Game/Settings/MenuBackground.renderTexture";
         private const string MacBuildPath = "Builds/macOS/FiveNightsAtLidl.app";
 
@@ -131,6 +145,19 @@ namespace FiveNightsAtLidl.Editor
             Texture2D dorianAngry = LoadRequiredTexture(DorianAngryPath);
             Texture2D dorianJumpscare = LoadRequiredTexture(DorianJumpscarePath);
             AudioClip dorianBlenderLoop = LoadRequiredAudioClip(DorianBlenderLoopPath);
+            AudioClip dorianAlarmLoop = LoadRequiredAudioClip(DorianAlarmLoopPath);
+            Texture2D bostanicaBeregoiOfficeFight =
+                LoadRequiredTexture(BostanicaBeregoiOfficeFightPath);
+            Texture2D bostanicaBeregoiShocked =
+                LoadRequiredTexture(BostanicaBeregoiShockedPath);
+            Texture2D bostanicaBeregoiJumpscare =
+                LoadRequiredTexture(BostanicaBeregoiJumpscarePath);
+            Texture2D officeSprayBottleForeground =
+                LoadRequiredTexture(OfficeSprayBottleForegroundPath);
+            AudioClip officeFightSprayHiss =
+                LoadRequiredAudioClip(OfficeFightSprayHissPath);
+            Texture2D officeNightFourBackground =
+                LoadRequiredTexture(OfficeNightFourBackgroundPath);
 
             RenderTexture menuRenderTexture = CreateOrUpdateMenuRenderTexture();
             CreateMainMenuScene(panelSettings, menuVideo, menuRenderTexture);
@@ -167,7 +194,14 @@ namespace FiveNightsAtLidl.Editor
                 dorianIrritated,
                 dorianAngry,
                 dorianJumpscare,
-                dorianBlenderLoop);
+                dorianBlenderLoop,
+                dorianAlarmLoop,
+                bostanicaBeregoiOfficeFight,
+                bostanicaBeregoiShocked,
+                bostanicaBeregoiJumpscare,
+                officeSprayBottleForeground,
+                officeFightSprayHiss,
+                officeNightFourBackground);
             ConfigureBuildScenes();
             ConfigurePlayerSettings();
 
@@ -287,7 +321,14 @@ namespace FiveNightsAtLidl.Editor
             Texture2D dorianIrritated,
             Texture2D dorianAngry,
             Texture2D dorianJumpscare,
-            AudioClip dorianBlenderLoop)
+            AudioClip dorianBlenderLoop,
+            AudioClip dorianAlarmLoop,
+            Texture2D bostanicaBeregoiOfficeFight,
+            Texture2D bostanicaBeregoiShocked,
+            Texture2D bostanicaBeregoiJumpscare,
+            Texture2D officeSprayBottleForeground,
+            AudioClip officeFightSprayHiss,
+            Texture2D officeNightFourBackground)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             CreatePresentationCamera();
@@ -329,7 +370,14 @@ namespace FiveNightsAtLidl.Editor
                 dorianIrritated,
                 dorianAngry,
                 dorianJumpscare,
-                dorianBlenderLoop);
+                dorianBlenderLoop,
+                dorianAlarmLoop,
+                bostanicaBeregoiOfficeFight,
+                bostanicaBeregoiShocked,
+                bostanicaBeregoiJumpscare,
+                officeSprayBottleForeground,
+                officeFightSprayHiss,
+                officeNightFourBackground);
 
             EditorSceneManager.SaveScene(scene, DemoScenePath);
         }

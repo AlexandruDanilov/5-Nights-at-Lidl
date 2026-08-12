@@ -249,12 +249,38 @@ When the battery reaches zero:
 1. Both doors are forced open and both doorway lights switch off.
 2. Door, light, and camera buttons are disabled for the rest of the shift.
 3. A heavy black overlay dims the office, with a faint unstable flicker.
-4. Once per second, Bolojan gets a new attack roll. The chance starts at 10%
-   after the first second and increases by 10 percentage points on each
-   following roll, capped at 100%.
+4. Bolojan gets an immediate 15% attack roll at the instant power reaches 0%.
+   He rolls again every three seconds, with the per-roll chance increasing by
+   5 percentage points each time, capped at 100%.
 5. A successful roll triggers the Bolojan jumpscare with **ELECTRICITY WASTED**
    as its only message, then ends the shift as a loss.
-6. Reaching 6 AM during this sequence still counts as a victory.
+6. Selly, Cabral, and Dorian remain active during the blackout. Their movement,
+   doorway attack, blender drain, anger, and jumpscare timers continue normally.
+7. Reaching 6 AM during this sequence takes priority over every blackout roll
+   and still counts as a victory.
+
+The blackout Bolojan probabilities are per roll:
+
+| Blackout time | Jumpscare chance |
+| ---: | ---: |
+| 0 seconds | 15% |
+| 3 seconds | 20% |
+| 6 seconds | 25% |
+| 9 seconds | 30% |
+| 12 seconds | 35% |
+| 15 seconds | 40% |
+| 18 seconds | 45% |
+| 21 seconds | 50% |
+| 24 seconds | 55% |
+| 27 seconds | 60% |
+| 30 seconds | 65% |
+| 33 seconds | 70% |
+| 36 seconds | 75% |
+| 39 seconds | 80% |
+| 42 seconds | 85% |
+| 45 seconds | 90% |
+| 48 seconds | 95% |
+| 51 seconds and later | 100% |
 
 ## 8. Clock and night pacing
 
@@ -265,8 +291,8 @@ When the battery reaches zero:
 - The clock uses game time, not the computer's real clock.
 - Pausing the game pauses the night timer.
 
-Target real-world night duration: **6 minutes**. Each displayed in-game hour lasts
-60 real-world seconds for the first demo.
+Target real-world night duration: **5 minutes**. Each displayed in-game hour lasts
+50 real-world seconds for the first demo.
 
 Character aggression may increase at configured hours. The first balancing goal
 is a tense but consistently understandable demo, not extreme difficulty.
@@ -324,15 +350,17 @@ is a tense but consistently understandable demo, not extreme difficulty.
   full-room composite, and he disappears from every feed once he reaches the
   office door.
 - He receives a movement opportunity every **4.97 seconds**. Each opportunity
-  rolls from 1 to 20 and succeeds when the roll is no greater than his current
+  rolls from 1 to 25 and succeeds when the roll is no greater than his current
   AI level. The base AI values follow Bonnie's original progression: Night 1 =
   0, Night 2 = 3, Night 3 = 0, Night 4 = 2, Night 5 = 5, and Night 6 = 10.
-  Later custom nights scale upward, capped at 20. Selly gains one additional AI
-  point at 2 AM, 3 AM, and 4 AM.
+  Later custom nights scale upward, capped at 25. Selly gains one additional AI
+  point at 2 AM, 3 AM, and 4 AM. The current balance pass subtracts one point
+  from the final automatic AI value after those bonuses, clamped at zero. On
+  Night 5 only, another point is subtracted.
 - A movement opportunity is blocked while the player can actually see Selly's
   current camera feed. The camera's signal-acquisition interval does not count
   as observing him because its image is still concealed.
-- Every successful transition produces a light **0.35-second static burst** on
+- Every successful transition produces a strong **0.35-second feed flicker** on
   both the camera Selly leaves and the camera he enters. If one side of the
   transition is the office door, the burst applies only to the connected camera
   feed. The cue adds brief opacity noise and subtle image jitter without using
@@ -350,7 +378,7 @@ is a tense but consistently understandable demo, not extreme difficulty.
 - Selly's attack uses the same close, shaking full-screen presentation as the
   Bolojan scare with Selly's dedicated frame, then ends the current night as a
   loss. It does not apply a battery tax or show Bolojan's message text.
-- `_sellyAiOverride` can be set from 0–20 in the gameplay controller inspector
+- `_sellyAiOverride` can be set from 0–25 in the gameplay controller inspector
   for balancing and deterministic development testing; **-1** uses the current
   night/hour progression described above.
 
@@ -360,13 +388,15 @@ is a tense but consistently understandable demo, not extreme difficulty.
   CAM 06 → left office door**. Every location uses a full-room composite; after
   reaching the office he disappears from all camera feeds.
 - He receives a movement opportunity every **4.98 seconds**. Each opportunity
-  rolls from 1 to 20 and succeeds when the roll is no greater than his current
+  rolls from 1 to 25 and succeeds when the roll is no greater than his current
   AI level. His base progression uses Chica's original values: Night 1 = 0,
   Night 2 = 1, Night 3 = 5, Night 4 = 4, Night 5 = 7, and Night 6 = 12. Later
-  custom nights scale upward and are capped at 20. He gains one additional AI
-  point at 3 AM and another at 4 AM.
+  custom nights scale upward and are capped at 25. He gains one additional AI
+  point at 3 AM and another at 4 AM. The current balance pass subtracts one
+  point from the final automatic AI value after those bonuses, clamped at zero.
+  On Night 5 only, another point is subtracted.
 - Unlike Selly, Cabral **can move while his current camera is being observed**.
-  A successful transition creates the same light **0.35-second static burst**
+  A successful transition creates the same strong **0.35-second feed flicker**
   on both the feed he leaves and the feed he enters, making an observed move
   readable without freezing his behavior.
 - His current room counts as occupied for Bolojan. In particular, Bolojan cannot
@@ -376,13 +406,14 @@ is a tense but consistently understandable demo, not extreme difficulty.
   Cabral waits immediately outside, one step behind the threshold. He remains
   broad and nearly door-height without entering the office or unnaturally
   filling the opening. The light is informational only: leaving the left door
-  open for **5 continuous seconds** triggers the attack regardless of light state.
+  open for **5 continuous seconds** triggers the attack regardless of light
+  state.
 - Closing the left door schedules a random **2–5 second** retreat. Cabral then
   goes back either two route steps to CAM 02 or three steps to CAM 01, chosen
   randomly, and resumes his normal movement opportunities.
 - His dedicated close, shaking jumpscare ends the night as a loss. It applies no
   battery tax and displays no Bolojan tax text.
-- `_cabralAiOverride` accepts 0–20 in the gameplay-controller inspector for
+- `_cabralAiOverride` accepts 0–25 in the gameplay-controller inspector for
   balancing; **-1** uses the current night/hour progression above.
 
 ### Implemented threat 04: Dorian Popa
@@ -401,15 +432,60 @@ is a tense but consistently understandable demo, not extreme difficulty.
   full-screen jumpscare ends the shift.
 - Drain pressure uses Foxy's FNAF 1 aggression progression as its input: base AI
   is 1/2/6/5/6 on Nights 2–6 and gains one point at both 3 AM and 4 AM. That AI
-  maps a full blender from **50 seconds** at low aggression down to **16.67
-  seconds** at AI 8 or higher. The visible anger states use Foxy's approximately
+  is currently reduced by one point after hourly bonuses. It maps a full blender
+  from **55 seconds** at low aggression down to **18.33 seconds** at AI 10 or
+  higher. The visible anger states use Foxy's approximately
   five-second movement-opportunity rhythm while remaining deterministic and
-  readable. `_dorianAiOverride` provides the same 0–20 inspector override used
+  readable. `_dorianAiOverride` provides the same 0–25 inspector override used
   by the moving threats; **-1** restores automatic night/hour progression.
 - The blender plays a quiet looping mechanical sound only while it is running
   and CAM 03 is visible. The replaceable source clip is
   `Assets/Game/Audio/SFX/Dorian_BlenderLoop.wav`; its playback volume and all
   core timing values are exposed on the gameplay controller.
+- When Dorian enters his final angry stage, exactly five seconds before the
+  jumpscare, a looping alarm begins. It is a global warning audible in the
+  office and on every camera feed, and stops immediately when the blender is
+  charged or Dorian is otherwise deactivated. Its replaceable clip is
+  `Assets/Game/Audio/SFX/Dorian_AlarmLoop.wav`.
+
+### Implemented threat 05: Bostanica and Beregoi
+
+- This shared office threat is completely absent before **Night 4**. Starting
+  with Night 4, the yellow water bottle is integrated directly into the office
+  wallpaper beside the telephone, while its **FAS FAS** button remains
+  aligned beside the camera button for the whole shift. Every pixel outside the
+  bottle matte remains identical to the standard office background, preventing
+  seams when the independent doorway-light frames are shown.
+- At the start of every in-game hour from 12 AM through 5 AM, the pair gets one
+  independent **50% appearance roll**. A successful roll chooses a random point
+  from 3–55 seconds into that hour, so their arrival is not tied to the clock
+  transition. The chance and timing window are exposed in the gameplay
+  controller for balancing.
+- When they appear, a transparent full-canvas foreground layer shows them
+  standing behind the desk and yelling at each other. It renders above the
+  independent door/light states, so illuminating either doorway cannot crop or
+  cover the women. A matching bottle foreground matte renders above them so the
+  desk prop correctly occludes their bodies instead of intersecting them. They
+  remain there indefinitely, including across later hour changes, until the
+  player uses the spray bottle. A scheduled appearance waits until the camera
+  monitor is raised, so the office transition happens behind the CCTV interface
+  and cannot collide with a door press. When the monitor is lowered and the pair
+  is first revealed, a **2-second door grace period** begins; doors work normally
+  and cannot trigger their jumpscare during that window.
+- Pressing **FAS FAS** always plays its short spray hiss, even while the office
+  is clear. If the pair is present, the threat becomes harmless immediately;
+  the first dark pulse masks their turn toward the player in shock, that
+  reaction remains readable briefly, and heavier light flickering then reaches
+  a full blackout. The pair is removed only while the screen is completely
+  black, after which recovery flickers reveal the unchanged empty office. The
+  replaceable hiss is stored at `Assets/Game/Audio/SFX/FasFas_SprayHiss.wav`.
+  They do not roll again during that same hour, but become eligible for the
+  normal roll when the following hour begins.
+- After the grace period, attempting to close either currently open office door
+  while they are present triggers their shared close, shaking jumpscare and ends
+  the shift as a loss.
+  Opening a door that was already closed does not trigger them. Door lights,
+  camera use, and elapsed time do not otherwise disturb the fight.
 
 ### Technical starting model
 
@@ -442,6 +518,9 @@ behavior description takes precedence.
 
 - Trigger: the clock reaches 6 AM.
 - Player controls are disabled.
+- The office lights and door states power down first. After a short readable
+  pause, an unstable dimming layer fades the entire office and HUD completely
+  to black before the result screen is allowed to appear.
 - A **SHIFT ENDED** result screen confirms the completed night and says,
   "See you around for Night N."
 - The completed night advances the persistent current-night value.
@@ -449,15 +528,19 @@ behavior description takes precedence.
 
 ### Loss
 
-- Trigger: the character completes its attack condition. The implemented fatal
-  conditions are Bolojan's successful power-out roll and Selly remaining at the
-  open right door for five seconds.
+- Trigger: a threat completes its attack condition. The implemented fatal
+  conditions are Bolojan's successful power-out roll; Selly or Cabral remaining
+  at an open door for five seconds; Dorian reaching the end of both anger
+  stages; and attempting to close either door while Bostanica and Beregoi are
+  fighting in the office.
 - Player controls are disabled.
 - A short scare/attack sequence plays.
 - A power-out loss uses **ELECTRICITY WASTED** during the jumpscare and on the
   result screen.
 - A Selly loss uses his dedicated jumpscare frame followed by a **SHIFT FAILED**
   result screen.
+- Cabral, Dorian, and Bostanica/Beregoi losses use their respective dedicated
+  jumpscare frames followed by the same **SHIFT FAILED** result flow.
 - The result screen offers retrying the current night or returning to the menu.
 
 The demo must also handle quitting or returning to the menu without being treated
