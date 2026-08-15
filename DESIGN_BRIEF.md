@@ -351,8 +351,9 @@ is a tense but consistently understandable demo, not extreme difficulty.
   office door.
 - He receives a movement opportunity every **4.97 seconds**. Each opportunity
   rolls from 1 to 25 and succeeds when the roll is no greater than his current
-  AI level. The base AI values follow Bonnie's original progression: Night 1 =
-  0, Night 2 = 3, Night 3 = 0, Night 4 = 2, Night 5 = 5, and Night 6 = 10.
+  AI level. The base AI values use a lightly active first night, then follow
+  Bonnie's progression: Night 1 = 2, Night 2 = 3, Night 3 = 0, Night 4 = 2,
+  Night 5 = 5, and Night 6 = 10.
   Later custom nights scale upward, capped at 25. Selly gains one additional AI
   point at 2 AM, 3 AM, and 4 AM. The current balance pass subtracts one point
   from the final automatic AI value after those bonuses, clamped at zero. On
@@ -389,8 +390,9 @@ is a tense but consistently understandable demo, not extreme difficulty.
   reaching the office he disappears from all camera feeds.
 - He receives a movement opportunity every **4.98 seconds**. Each opportunity
   rolls from 1 to 25 and succeeds when the roll is no greater than his current
-  AI level. His base progression uses Chica's original values: Night 1 = 0,
-  Night 2 = 1, Night 3 = 5, Night 4 = 4, Night 5 = 7, and Night 6 = 12. Later
+  AI level. His base progression uses a lightly active first night, followed by
+  Chica's values: Night 1 = 2, Night 2 = 1, Night 3 = 5, Night 4 = 4, Night 5 =
+  7, and Night 6 = 12. Later
   custom nights scale upward and are capped at 25. He gains one additional AI
   point at 3 AM and another at 4 AM. The current balance pass subtracts one
   point from the final automatic AI value after those bonuses, clamped at zero.
@@ -440,7 +442,7 @@ is a tense but consistently understandable demo, not extreme difficulty.
   by the moving threats; **-1** restores automatic night/hour progression.
 - The blender plays a quiet looping mechanical sound only while it is running
   and CAM 03 is visible. The replaceable source clip is
-  `Assets/Game/Audio/SFX/Dorian_BlenderLoop.wav`; its playback volume and all
+  `Assets/Game/Audio/SFX/Dorian_Blender.mp3`; its playback volume and all
   core timing values are exposed on the gameplay controller.
 - When Dorian enters his final angry stage, exactly five seconds before the
   jumpscare, a looping alarm begins. It is a global warning audible in the
@@ -472,14 +474,15 @@ is a tense but consistently understandable demo, not extreme difficulty.
   and cannot collide with a door press. When the monitor is lowered and the pair
   is first revealed, a **2-second door grace period** begins; doors work normally
   and cannot trigger their jumpscare during that window.
-- Pressing **FAS FAS** always plays its short spray hiss, even while the office
-  is clear. If the pair is present, the threat becomes harmless immediately;
+- While the pair is present, `Assets/Game/Audio/SFX/Girls_Taro.mp3` loops as
+  their global office-presence sound. If the pair is present, pressing **FAS
+  FAS** stops that sound immediately and the threat becomes harmless;
   the first dark pulse masks their turn toward the player in shock, that
   reaction remains readable briefly, and heavier light flickering then reaches
   a full blackout. The pair is removed only while the screen is completely
   black, after which recovery flickers reveal the unchanged empty office. The
-  replaceable hiss is stored at `Assets/Game/Audio/SFX/FasFas_SprayHiss.wav`.
-  They do not roll again during that same hour, but become eligible for the
+  the disappearance itself is silent. They do not roll again during that same
+  hour, but become eligible for the
   normal roll when the following hour begins.
 - After the grace period, attempting to close either currently open office door
   while they are present triggers their shared close, shaking jumpscare and ends
@@ -573,15 +576,40 @@ exact needs. The likely minimum inventory is listed below.
 
 ### Audio
 
-- Main ambience loop.
+- Night 1 has a phone message stored at
+  `Assets/Game/Audio/Voice/Night01_PhoneCall.mp3`. It begins 10 seconds after
+  the playable shift starts and remains audible in the office, on camera feeds,
+  and during a power outage.
+- A compact **MUTE CALL** button appears in the upper-left corner only while the
+  message is playing. Pressing it immediately and permanently ends that night's
+  call. Fatal jumpscares and the end-of-night sequence also stop and hide the
+  call; Bolojan's nonfatal tax scare does not interrupt it.
+- `Assets/Game/Audio/Ambience/Manele_Lofi_01.mp3` loops quietly as global
+  background ambience on every night. It starts when the playable shift begins,
+  remains audible in the office, on cameras, and through a power outage, then
+  stops and rewinds for a fatal jumpscare or the end-of-night sequence.
+  Bolojan's nonfatal tax scare does not interrupt the music. Every new night
+  starts it again from the beginning. Its volume is exposed on the gameplay
+  controller.
+- Successful manual door toggles play
+  `Assets/Game/Audio/SFX/Office_Doors.mp3`; successful manual light toggles play
+  `Assets/Game/Audio/SFX/Office_Lights.mp3`. Both apply to the left and right
+  controls, use independent inspector volumes, and do not play for disabled or
+  rejected inputs.
+- Turning on the right doorway light while Selly is waiting there additionally
+  plays `Assets/Game/Audio/SFX/Selly_DoorwayWarning.mp3`. It does not play when
+  switching the light off, at an empty doorway, or during automatic light-state
+  changes. Its volume is independently adjustable.
+- Turning on the left doorway light while Cabral is waiting there additionally
+  plays `Assets/Game/Audio/SFX/Cabral_DoorwayWarning.mp3`, following the same
+  empty-check, switch-off, and volume rules as Selly's warning.
+- Every threat uses `Assets/Game/Audio/SFX/Universal_Jumpscare.mp3` when its
+  jumpscare begins, including both Bolojan's nonfatal tax and fatal power-out
+  variants. The shared volume is exposed on the gameplay controller.
 - Camera monitor raise/lower.
 - Camera feed change/static.
-- Left and right door sounds.
-- Left and right light sounds if appropriate.
 - Character movement or location cues.
-- Doorway warning cue if part of the character design.
 - Power-low and power-out feedback.
-- Attack/jumpscare sound.
 - 6 AM/victory sound.
 - Menu selection and confirmation sounds.
 

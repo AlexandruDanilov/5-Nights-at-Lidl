@@ -35,6 +35,7 @@ namespace FiveNightsAtLidl.UI
         private const float PowerFailureChanceStep = 0.05f;
         private const float VictoryLightsOutHoldSeconds = 0.3f;
         private const float VictoryBlackoutFadeSeconds = 1.35f;
+        private const int FirstPhoneCallNight = 1;
         private const string BolojanTaxMessage = "BOLOJAN TAX";
         private const string ElectricityWastedMessage = "ELECTRICITY WASTED";
         private const string SellyCameraFourId = "CAM 04";
@@ -273,10 +274,10 @@ namespace FiveNightsAtLidl.UI
         private Texture2D _officeSprayBottleForegroundTexture;
 
         [SerializeField]
-        private AudioClip _officeFightSprayHissClip;
+        private AudioClip _officeFightPresenceClip;
 
         [SerializeField, Range(0f, 1f)]
-        private float _officeFightSprayHissVolume = 0.32f;
+        private float _officeFightPresenceVolume = 0.32f;
 
         [SerializeField, Range(0f, 1f)]
         [Tooltip("One independent appearance roll at the beginning of every in-game hour.")]
@@ -293,6 +294,56 @@ namespace FiveNightsAtLidl.UI
         [SerializeField, Min(0f)]
         [Tooltip("Safe door-use window after the camera monitor first reveals the fight.")]
         private float _bostanicaBeregoiDoorGraceSeconds = 2f;
+
+        [Header("Phone Calls")]
+        [SerializeField]
+        private AudioClip _nightOnePhoneCallClip;
+
+        [SerializeField, Min(0f)]
+        [Tooltip("Seconds after the playable night begins before the call starts.")]
+        private float _phoneCallStartDelaySeconds = 10f;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _phoneCallVolume = 0.8f;
+
+        [Header("Night Ambience")]
+        [SerializeField]
+        private AudioClip _nightAmbienceClip;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _nightAmbienceVolume = 0.12f;
+
+        [Header("Office Control Audio")]
+        [SerializeField]
+        private AudioClip _doorControlClip;
+
+        [SerializeField]
+        private AudioClip _lightControlClip;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _doorControlVolume = 0.65f;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _lightControlVolume = 0.55f;
+
+        [SerializeField]
+        private AudioClip _sellyDoorwayWarningClip;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _sellyDoorwayWarningVolume = 0.75f;
+
+        [SerializeField]
+        private AudioClip _cabralDoorwayWarningClip;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _cabralDoorwayWarningVolume = 0.75f;
+
+        [Header("Jumpscare Audio")]
+        [SerializeField]
+        private AudioClip _universalJumpscareClip;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _universalJumpscareVolume = 0.8f;
 
         private Label _clockLabel;
         private Label _batteryLabel;
@@ -330,9 +381,14 @@ namespace FiveNightsAtLidl.UI
         private Button _resultPrimaryButton;
         private Button _dorianChargeButton;
         private Button _officeFightSprayButton;
+        private Button _mutePhoneCallButton;
         private AudioSource _dorianBlenderAudioSource;
         private AudioSource _dorianAlarmAudioSource;
-        private AudioSource _officeFightSprayAudioSource;
+        private AudioSource _officeFightPresenceAudioSource;
+        private AudioSource _phoneCallAudioSource;
+        private AudioSource _nightAmbienceAudioSource;
+        private AudioSource _officeControlAudioSource;
+        private AudioSource _jumpscareAudioSource;
         private float _elapsedNightSeconds;
         private float _batteryRemaining;
         private float _nextCameraFeedFlickerAt;
@@ -394,6 +450,9 @@ namespace FiveNightsAtLidl.UI
         private bool _officeFightThreatEnabled;
         private bool _officeFightSpawnPending;
         private bool _officeFightActive;
+        private bool _phoneCallStarted;
+        private bool _phoneCallActive;
+        private bool _phoneCallMuted;
         private int _officeFightSprayAnimationGeneration;
         private string _lossTitle = ElectricityWastedMessage;
         private string _lossMessage = "The shift ended in darkness.";
@@ -456,6 +515,9 @@ namespace FiveNightsAtLidl.UI
             _officeFightScheduledHour = -1;
             _officeFightSpawnAtNightSecond = -1f;
             _officeFightDoorDangerAt = 0f;
+            _phoneCallStarted = false;
+            _phoneCallActive = false;
+            _phoneCallMuted = false;
             _officeFightSprayAnimationGeneration++;
             _forcedCameraThreatFlickerUntil = 0f;
             _lossTitle = ElectricityWastedMessage;
@@ -479,7 +541,7 @@ namespace FiveNightsAtLidl.UI
             _sellyStaticCameraIds.Clear();
             _cabralStaticCameraIds.Clear();
             _preNightTitleRemaining = PreNightTitleDurationSeconds;
-            ConfigureDorianBlenderAudio();
+            ConfigureAudioSources();
             BuildInterface();
             UpdateClock(force: true);
             UpdateBatteryReadout();
@@ -489,7 +551,9 @@ namespace FiveNightsAtLidl.UI
         {
             StopDorianBlenderAudio();
             StopDorianAlarmAudio();
-            StopOfficeFightSprayHiss();
+            StopOfficeFightPresenceAudio();
+            StopPhoneCall();
+            StopNightAmbience();
         }
 
         private bool EnsurePanelSettings()
@@ -543,6 +607,7 @@ namespace FiveNightsAtLidl.UI
             float elapsedSeconds = Time.deltaTime;
             AnimateCameraFeed();
             _elapsedNightSeconds += elapsedSeconds;
+            UpdatePhoneCall();
             UpdateClock(force: false);
             if (_displayedHour >= FinalHour)
             {
@@ -675,6 +740,7 @@ namespace FiveNightsAtLidl.UI
             root.Add(batteryHud);
 
             BuildCameraDashboard(root);
+            BuildPhoneCallControls(root);
             hud.BringToFront();
             batteryHud.BringToFront();
             BuildNightIntro(root);
@@ -697,11 +763,25 @@ namespace FiveNightsAtLidl.UI
         private void BeginNight()
         {
             _nightStarted = true;
+            StartNightAmbience();
             ScheduleOfficeFightForHour(0);
             if (_nightIntroOverlay != null)
             {
                 _nightIntroOverlay.style.display = DisplayStyle.None;
             }
+        }
+
+        private void BuildPhoneCallControls(VisualElement root)
+        {
+            _mutePhoneCallButton = new Button(MutePhoneCall)
+            {
+                name = "mute-phone-call-button",
+                text = "MUTE CALL",
+                tooltip = "End the current phone call"
+            };
+            _mutePhoneCallButton.AddToClassList("mute-phone-call-button");
+            _mutePhoneCallButton.style.display = DisplayStyle.None;
+            root.Add(_mutePhoneCallButton);
         }
 
         private void BuildPowerFailureDimOverlay(VisualElement root)
@@ -965,6 +1045,19 @@ namespace FiveNightsAtLidl.UI
 
             RefreshLightButtonStates();
             UpdateOfficeVisualState();
+            PlayOfficeControlSound(_lightControlClip, _lightControlVolume);
+            if (isLeft && _leftLightOn && IsCabralAtOfficeDoor())
+            {
+                PlayOfficeControlSound(
+                    _cabralDoorwayWarningClip,
+                    _cabralDoorwayWarningVolume);
+            }
+            else if (!isLeft && _rightLightOn && IsSellyAtOfficeDoor())
+            {
+                PlayOfficeControlSound(
+                    _sellyDoorwayWarningClip,
+                    _sellyDoorwayWarningVolume);
+            }
         }
 
         private void TurnOffLights()
@@ -1008,6 +1101,7 @@ namespace FiveNightsAtLidl.UI
 
             RefreshDoorButtonStates();
             UpdateOfficeVisualState();
+            PlayOfficeControlSound(_doorControlClip, _doorControlVolume);
         }
 
         private void UpdateOfficeFightThreat()
@@ -1070,10 +1164,15 @@ namespace FiveNightsAtLidl.UI
             ResetOfficeFightBlackout();
             if (!active)
             {
-                StopOfficeFightSprayHiss();
+                StopOfficeFightPresenceAudio();
             }
 
             _officeFightActive = _officeFightThreatEnabled && active;
+            if (_officeFightActive)
+            {
+                StartOfficeFightPresenceAudio();
+            }
+
             _officeFightDoorDangerAt = _officeFightActive
                 ? float.PositiveInfinity
                 : 0f;
@@ -1097,12 +1196,12 @@ namespace FiveNightsAtLidl.UI
                 return;
             }
 
-            PlayOfficeFightSprayHiss();
             if (!_officeFightActive)
             {
                 return;
             }
 
+            StopOfficeFightPresenceAudio();
             _officeFightActive = false;
             _officeFightSprayButton?.EnableInClassList(
                 "office-spray-button-threat",
@@ -1180,7 +1279,6 @@ namespace FiveNightsAtLidl.UI
                 if (completesAnimation)
                 {
                     ResetOfficeFightBlackout();
-                    StopOfficeFightSprayHiss();
                 }
             }).StartingIn(delayMilliseconds);
         }
@@ -2028,6 +2126,8 @@ namespace FiveNightsAtLidl.UI
             switch (_nightNumber)
             {
                 case 1:
+                    baseAi = 2;
+                    break;
                 case 3:
                     baseAi = 0;
                     break;
@@ -2313,7 +2413,7 @@ namespace FiveNightsAtLidl.UI
             switch (_nightNumber)
             {
                 case 1:
-                    baseAi = 0;
+                    baseAi = 2;
                     break;
                 case 2:
                     baseAi = 1;
@@ -2643,7 +2743,7 @@ namespace FiveNightsAtLidl.UI
             }
         }
 
-        private void ConfigureDorianBlenderAudio()
+        private void ConfigureAudioSources()
         {
             AudioSource[] existingSources = GetComponents<AudioSource>();
             if (_dorianBlenderAudioSource == null && existingSources.Length > 0)
@@ -2685,38 +2785,195 @@ namespace FiveNightsAtLidl.UI
             _dorianAlarmAudioSource.volume = _dorianAlarmVolume;
             _dorianAlarmAudioSource.clip = _dorianAlarmLoopClip;
 
-            if (_officeFightSprayAudioSource == null)
+            if (_officeFightPresenceAudioSource == null)
             {
-                _officeFightSprayAudioSource = gameObject.AddComponent<AudioSource>();
+                _officeFightPresenceAudioSource = gameObject.AddComponent<AudioSource>();
             }
 
-            _officeFightSprayAudioSource.playOnAwake = false;
-            _officeFightSprayAudioSource.loop = false;
-            _officeFightSprayAudioSource.spatialBlend = 0f;
-            _officeFightSprayAudioSource.volume = _officeFightSprayHissVolume;
-            _officeFightSprayAudioSource.clip = _officeFightSprayHissClip;
+            _officeFightPresenceAudioSource.playOnAwake = false;
+            _officeFightPresenceAudioSource.loop = true;
+            _officeFightPresenceAudioSource.spatialBlend = 0f;
+            _officeFightPresenceAudioSource.volume = _officeFightPresenceVolume;
+            _officeFightPresenceAudioSource.clip = _officeFightPresenceClip;
+
+            if (_phoneCallAudioSource == null)
+            {
+                _phoneCallAudioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            _phoneCallAudioSource.playOnAwake = false;
+            _phoneCallAudioSource.loop = false;
+            _phoneCallAudioSource.spatialBlend = 0f;
+            _phoneCallAudioSource.volume = _phoneCallVolume;
+            _phoneCallAudioSource.clip = _nightOnePhoneCallClip;
+
+            if (_nightAmbienceAudioSource == null)
+            {
+                _nightAmbienceAudioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            _nightAmbienceAudioSource.playOnAwake = false;
+            _nightAmbienceAudioSource.loop = true;
+            _nightAmbienceAudioSource.spatialBlend = 0f;
+            _nightAmbienceAudioSource.volume = _nightAmbienceVolume;
+            _nightAmbienceAudioSource.clip = _nightAmbienceClip;
+
+            if (_officeControlAudioSource == null)
+            {
+                _officeControlAudioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            _officeControlAudioSource.playOnAwake = false;
+            _officeControlAudioSource.loop = false;
+            _officeControlAudioSource.spatialBlend = 0f;
+
+            if (_jumpscareAudioSource == null)
+            {
+                _jumpscareAudioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            _jumpscareAudioSource.playOnAwake = false;
+            _jumpscareAudioSource.loop = false;
+            _jumpscareAudioSource.spatialBlend = 0f;
+            _jumpscareAudioSource.volume = _universalJumpscareVolume;
+            _jumpscareAudioSource.clip = _universalJumpscareClip;
         }
 
-        private void PlayOfficeFightSprayHiss()
+        private void PlayOfficeControlSound(AudioClip clip, float volume)
         {
-            if (_officeFightSprayAudioSource == null ||
-                _officeFightSprayHissClip == null)
+            if (_officeControlAudioSource == null || clip == null)
             {
                 return;
             }
 
-            _officeFightSprayAudioSource.Stop();
-            _officeFightSprayAudioSource.clip = _officeFightSprayHissClip;
-            _officeFightSprayAudioSource.volume = _officeFightSprayHissVolume;
-            _officeFightSprayAudioSource.Play();
+            _officeControlAudioSource.PlayOneShot(clip, Mathf.Clamp01(volume));
         }
 
-        private void StopOfficeFightSprayHiss()
+        private void StartNightAmbience()
         {
-            if (_officeFightSprayAudioSource != null &&
-                _officeFightSprayAudioSource.isPlaying)
+            if (_nightAmbienceAudioSource == null || _nightAmbienceClip == null)
             {
-                _officeFightSprayAudioSource.Stop();
+                return;
+            }
+
+            _nightAmbienceAudioSource.clip = _nightAmbienceClip;
+            _nightAmbienceAudioSource.volume = _nightAmbienceVolume;
+            if (!_nightAmbienceAudioSource.isPlaying)
+            {
+                _nightAmbienceAudioSource.time = 0f;
+                _nightAmbienceAudioSource.Play();
+            }
+        }
+
+        private void StopNightAmbience()
+        {
+            if (_nightAmbienceAudioSource != null && _nightAmbienceAudioSource.isPlaying)
+            {
+                _nightAmbienceAudioSource.Stop();
+            }
+
+            if (_nightAmbienceAudioSource != null)
+            {
+                _nightAmbienceAudioSource.time = 0f;
+            }
+        }
+
+        private void UpdatePhoneCall()
+        {
+            if (_phoneCallMuted ||
+                _nightNumber != FirstPhoneCallNight ||
+                _nightOnePhoneCallClip == null ||
+                _phoneCallAudioSource == null)
+            {
+                return;
+            }
+
+            if (!_phoneCallStarted)
+            {
+                if (_elapsedNightSeconds < _phoneCallStartDelaySeconds)
+                {
+                    return;
+                }
+
+                _phoneCallStarted = true;
+                _phoneCallActive = true;
+                _phoneCallAudioSource.clip = _nightOnePhoneCallClip;
+                _phoneCallAudioSource.volume = _phoneCallVolume;
+                _phoneCallAudioSource.Play();
+                RefreshPhoneCallControls();
+                return;
+            }
+
+            if (_phoneCallActive && !_phoneCallAudioSource.isPlaying)
+            {
+                _phoneCallActive = false;
+                RefreshPhoneCallControls();
+            }
+
+            if (_phoneCallActive)
+            {
+                _mutePhoneCallButton?.BringToFront();
+            }
+        }
+
+        private void MutePhoneCall()
+        {
+            if (!_phoneCallActive)
+            {
+                return;
+            }
+
+            _phoneCallMuted = true;
+            StopPhoneCall();
+        }
+
+        private void StopPhoneCall()
+        {
+            if (_phoneCallAudioSource != null && _phoneCallAudioSource.isPlaying)
+            {
+                _phoneCallAudioSource.Stop();
+            }
+
+            _phoneCallActive = false;
+            RefreshPhoneCallControls();
+        }
+
+        private void RefreshPhoneCallControls()
+        {
+            if (_mutePhoneCallButton == null)
+            {
+                return;
+            }
+
+            _mutePhoneCallButton.style.display = _phoneCallActive
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+            if (_phoneCallActive)
+            {
+                _mutePhoneCallButton.BringToFront();
+            }
+        }
+
+        private void StartOfficeFightPresenceAudio()
+        {
+            if (_officeFightPresenceAudioSource == null ||
+                _officeFightPresenceClip == null)
+            {
+                return;
+            }
+
+            _officeFightPresenceAudioSource.Stop();
+            _officeFightPresenceAudioSource.clip = _officeFightPresenceClip;
+            _officeFightPresenceAudioSource.volume = _officeFightPresenceVolume;
+            _officeFightPresenceAudioSource.Play();
+        }
+
+        private void StopOfficeFightPresenceAudio()
+        {
+            if (_officeFightPresenceAudioSource != null &&
+                _officeFightPresenceAudioSource.isPlaying)
+            {
+                _officeFightPresenceAudioSource.Stop();
             }
         }
 
@@ -2998,6 +3255,7 @@ namespace FiveNightsAtLidl.UI
             _bolojanJumpscareEndsNight = endsNight;
             _jumpscareShowsMessage = showsMessage;
             _bolojanJumpscareElapsed = 0f;
+            PlayUniversalJumpscareSound();
             if (endsNight)
             {
                 _lossTitle = string.IsNullOrEmpty(lossTitle)
@@ -3018,6 +3276,12 @@ namespace FiveNightsAtLidl.UI
 
             _cameraDashboardOpen = false;
             _dorianChargeHeld = false;
+            if (endsNight)
+            {
+                StopPhoneCall();
+                StopNightAmbience();
+            }
+
             StopDorianBlenderAudio();
             StopDorianAlarmAudio();
             _cameraDashboard.style.display = DisplayStyle.None;
@@ -3029,6 +3293,19 @@ namespace FiveNightsAtLidl.UI
             _bolojanJumpscareMessageLabel.style.display = DisplayStyle.None;
             _bolojanJumpscareOverlay.style.display = DisplayStyle.Flex;
             _bolojanJumpscareOverlay.BringToFront();
+        }
+
+        private void PlayUniversalJumpscareSound()
+        {
+            if (_jumpscareAudioSource == null || _universalJumpscareClip == null)
+            {
+                return;
+            }
+
+            _jumpscareAudioSource.Stop();
+            _jumpscareAudioSource.clip = _universalJumpscareClip;
+            _jumpscareAudioSource.volume = _universalJumpscareVolume;
+            _jumpscareAudioSource.Play();
         }
 
         private void AnimateBolojanJumpscare(float elapsedSeconds)
@@ -3172,6 +3449,8 @@ namespace FiveNightsAtLidl.UI
             _nightEnded = true;
             _victoryTransitionActive = true;
             _victoryTransitionElapsed = 0f;
+            StopPhoneCall();
+            StopNightAmbience();
             _powerFailureActive = false;
             _officeFightSpawnPending = false;
             SetOfficeFightActive(false);
@@ -3322,8 +3601,15 @@ namespace FiveNightsAtLidl.UI
             Texture2D bostanicaBeregoiShockedTexture,
             Texture2D bostanicaBeregoiJumpscareTexture,
             Texture2D officeSprayBottleForegroundTexture,
-            AudioClip officeFightSprayHissClip,
-            Texture2D officeNightFourBackground)
+            AudioClip officeFightPresenceClip,
+            Texture2D officeNightFourBackground,
+            AudioClip nightOnePhoneCallClip,
+            AudioClip nightAmbienceClip,
+            AudioClip doorControlClip,
+            AudioClip lightControlClip,
+            AudioClip universalJumpscareClip,
+            AudioClip sellyDoorwayWarningClip,
+            AudioClip cabralDoorwayWarningClip)
         {
             _fallbackPanelSettings = panelSettings;
             _officeBackground = officeBackground;
@@ -3363,8 +3649,15 @@ namespace FiveNightsAtLidl.UI
             _bostanicaBeregoiShockedTexture = bostanicaBeregoiShockedTexture;
             _bostanicaBeregoiJumpscareTexture = bostanicaBeregoiJumpscareTexture;
             _officeSprayBottleForegroundTexture = officeSprayBottleForegroundTexture;
-            _officeFightSprayHissClip = officeFightSprayHissClip;
+            _officeFightPresenceClip = officeFightPresenceClip;
             _officeNightFourBackground = officeNightFourBackground;
+            _nightOnePhoneCallClip = nightOnePhoneCallClip;
+            _nightAmbienceClip = nightAmbienceClip;
+            _doorControlClip = doorControlClip;
+            _lightControlClip = lightControlClip;
+            _universalJumpscareClip = universalJumpscareClip;
+            _sellyDoorwayWarningClip = sellyDoorwayWarningClip;
+            _cabralDoorwayWarningClip = cabralDoorwayWarningClip;
         }
 
         private void UpdateClock(bool force)

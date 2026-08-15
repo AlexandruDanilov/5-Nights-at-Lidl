@@ -341,6 +341,42 @@
     -unity-text-outline-color: rgba(0, 0, 0, 0.95);
 }
 
+.mute-phone-call-button {
+    position: absolute;
+    left: 40px;
+    top: 38px;
+    width: 156px;
+    height: 44px;
+    padding: 0;
+    background-color: rgba(2, 7, 9, 0.88);
+    border-left-width: 2px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(127, 53, 49);
+    border-right-color: rgb(53, 39, 39);
+    border-top-color: rgb(77, 49, 48);
+    border-bottom-color: rgb(38, 29, 29);
+    border-radius: 0;
+    color: rgb(171, 104, 98);
+    font-size: 15px;
+    letter-spacing: 2px;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.95);
+}
+
+.mute-phone-call-button:hover,
+.mute-phone-call-button:focus {
+    background-color: rgba(21, 9, 9, 0.94);
+    border-left-color: rgb(191, 75, 67);
+    color: rgb(218, 137, 128);
+}
+
+.mute-phone-call-button:active {
+    translate: 0 2px;
+}
+
 .battery-hud {
     position: absolute;
     left: 54px;

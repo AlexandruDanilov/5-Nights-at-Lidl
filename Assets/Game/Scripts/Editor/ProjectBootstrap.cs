@@ -82,7 +82,7 @@ namespace FiveNightsAtLidl.Editor
         private const string DorianJumpscarePath =
             "Assets/Game/Art/Characters/Dorian/Dorian_Jumpscare.png";
         private const string DorianBlenderLoopPath =
-            "Assets/Game/Audio/SFX/Dorian_BlenderLoop.wav";
+            "Assets/Game/Audio/SFX/Dorian_Blender.mp3";
         private const string DorianAlarmLoopPath =
             "Assets/Game/Audio/SFX/Dorian_AlarmLoop.wav";
         private const string BostanicaBeregoiOfficeFightPath =
@@ -93,10 +93,24 @@ namespace FiveNightsAtLidl.Editor
             "Assets/Game/Art/Characters/BostanicaBeregoi/BostanicaBeregoi_Jumpscare.png";
         private const string OfficeSprayBottleForegroundPath =
             "Assets/Game/Art/Characters/BostanicaBeregoi/SprayBottle_OfficeForeground.png";
-        private const string OfficeFightSprayHissPath =
-            "Assets/Game/Audio/SFX/FasFas_SprayHiss.wav";
+        private const string OfficeFightPresenceAudioPath =
+            "Assets/Game/Audio/SFX/Girls_Taro.mp3";
         private const string OfficeNightFourBackgroundPath =
             "Assets/Game/Art/Backgrounds/OfficeBaseNight4_SprayIntegrated.png";
+        private const string NightOnePhoneCallPath =
+            "Assets/Game/Audio/Voice/Night01_PhoneCall.mp3";
+        private const string NightAmbiencePath =
+            "Assets/Game/Audio/Ambience/Manele_Lofi_01.mp3";
+        private const string DoorControlAudioPath =
+            "Assets/Game/Audio/SFX/Office_Doors.mp3";
+        private const string LightControlAudioPath =
+            "Assets/Game/Audio/SFX/Office_Lights.mp3";
+        private const string UniversalJumpscareAudioPath =
+            "Assets/Game/Audio/SFX/Universal_Jumpscare.mp3";
+        private const string SellyDoorwayWarningAudioPath =
+            "Assets/Game/Audio/SFX/Selly_DoorwayWarning.mp3";
+        private const string CabralDoorwayWarningAudioPath =
+            "Assets/Game/Audio/SFX/Cabral_DoorwayWarning.mp3";
         private const string MenuRenderTexturePath = "Assets/Game/Settings/MenuBackground.renderTexture";
         private const string MacBuildPath = "Builds/macOS/FiveNightsAtLidl.app";
 
@@ -154,10 +168,24 @@ namespace FiveNightsAtLidl.Editor
                 LoadRequiredTexture(BostanicaBeregoiJumpscarePath);
             Texture2D officeSprayBottleForeground =
                 LoadRequiredTexture(OfficeSprayBottleForegroundPath);
-            AudioClip officeFightSprayHiss =
-                LoadRequiredAudioClip(OfficeFightSprayHissPath);
+            AudioClip officeFightPresenceAudio =
+                LoadRequiredAudioClip(OfficeFightPresenceAudioPath);
             Texture2D officeNightFourBackground =
                 LoadRequiredTexture(OfficeNightFourBackgroundPath);
+            AudioClip nightOnePhoneCall =
+                LoadRequiredAudioClip(NightOnePhoneCallPath);
+            AudioClip nightAmbience =
+                LoadRequiredAudioClip(NightAmbiencePath);
+            AudioClip doorControlAudio =
+                LoadRequiredAudioClip(DoorControlAudioPath);
+            AudioClip lightControlAudio =
+                LoadRequiredAudioClip(LightControlAudioPath);
+            AudioClip universalJumpscareAudio =
+                LoadRequiredAudioClip(UniversalJumpscareAudioPath);
+            AudioClip sellyDoorwayWarningAudio =
+                LoadRequiredAudioClip(SellyDoorwayWarningAudioPath);
+            AudioClip cabralDoorwayWarningAudio =
+                LoadRequiredAudioClip(CabralDoorwayWarningAudioPath);
 
             RenderTexture menuRenderTexture = CreateOrUpdateMenuRenderTexture();
             CreateMainMenuScene(panelSettings, menuVideo, menuRenderTexture);
@@ -200,8 +228,15 @@ namespace FiveNightsAtLidl.Editor
                 bostanicaBeregoiShocked,
                 bostanicaBeregoiJumpscare,
                 officeSprayBottleForeground,
-                officeFightSprayHiss,
-                officeNightFourBackground);
+                officeFightPresenceAudio,
+                officeNightFourBackground,
+                nightOnePhoneCall,
+                nightAmbience,
+                doorControlAudio,
+                lightControlAudio,
+                universalJumpscareAudio,
+                sellyDoorwayWarningAudio,
+                cabralDoorwayWarningAudio);
             ConfigureBuildScenes();
             ConfigurePlayerSettings();
 
@@ -327,8 +362,15 @@ namespace FiveNightsAtLidl.Editor
             Texture2D bostanicaBeregoiShocked,
             Texture2D bostanicaBeregoiJumpscare,
             Texture2D officeSprayBottleForeground,
-            AudioClip officeFightSprayHiss,
-            Texture2D officeNightFourBackground)
+            AudioClip officeFightPresenceAudio,
+            Texture2D officeNightFourBackground,
+            AudioClip nightOnePhoneCall,
+            AudioClip nightAmbience,
+            AudioClip doorControlAudio,
+            AudioClip lightControlAudio,
+            AudioClip universalJumpscareAudio,
+            AudioClip sellyDoorwayWarningAudio,
+            AudioClip cabralDoorwayWarningAudio)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             CreatePresentationCamera();
@@ -376,8 +418,15 @@ namespace FiveNightsAtLidl.Editor
                 bostanicaBeregoiShocked,
                 bostanicaBeregoiJumpscare,
                 officeSprayBottleForeground,
-                officeFightSprayHiss,
-                officeNightFourBackground);
+                officeFightPresenceAudio,
+                officeNightFourBackground,
+                nightOnePhoneCall,
+                nightAmbience,
+                doorControlAudio,
+                lightControlAudio,
+                universalJumpscareAudio,
+                sellyDoorwayWarningAudio,
+                cabralDoorwayWarningAudio);
 
             EditorSceneManager.SaveScene(scene, DemoScenePath);
         }
