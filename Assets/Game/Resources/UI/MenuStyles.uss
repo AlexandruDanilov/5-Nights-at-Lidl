@@ -232,7 +232,7 @@
 
 .settings-panel {
     width: 580px;
-    min-height: 620px;
+    max-height: 90%;
     padding: 46px;
     background-color: rgb(4, 13, 19);
     border-left-width: 2px;

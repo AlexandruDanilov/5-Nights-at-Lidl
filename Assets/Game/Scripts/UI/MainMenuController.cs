@@ -24,6 +24,11 @@ namespace FiveNightsAtLidl.UI
         private Button _settingsButton;
         private Label _currentNightLabel;
         private Label _progressResetStatusLabel;
+        private VisualElement _replayLockControls;
+        private VisualElement _replayControls;
+        private Label _replayStatusLabel;
+        private TextField _replayPassword;
+        private IntegerField _replayNightField;
 
         private void OnEnable()
         {
@@ -111,7 +116,7 @@ namespace FiveNightsAtLidl.UI
             _settingsOverlay.AddToClassList("settings-overlay");
             _settingsOverlay.style.display = DisplayStyle.None;
 
-            VisualElement panel = new VisualElement();
+            ScrollView panel = new ScrollView(ScrollViewMode.Vertical);
             panel.AddToClassList("settings-panel");
             panel.Add(MenuUiFactory.CreateLabel("SETTINGS", "panel-title"));
             panel.Add(MenuUiFactory.CreateLabel(
@@ -163,12 +168,82 @@ namespace FiveNightsAtLidl.UI
             _progressResetStatusLabel.style.display = DisplayStyle.None;
             panel.Add(_progressResetStatusLabel);
 
+            BuildNightReplayControls(panel);
+
             Button backButton = MenuUiFactory.CreateButton("BACK", HideSettings, "settings-back-button");
             backButton.AddToClassList("settings-back-button");
             panel.Add(backButton);
 
             _settingsOverlay.Add(panel);
             _root.Add(_settingsOverlay);
+        }
+
+        private void BuildNightReplayControls(VisualElement panel)
+        {
+            panel.Add(MenuUiFactory.CreateLabel("REPLAY A NIGHT", "settings-section-label"));
+            _replayLockControls = new VisualElement();
+            _replayLockControls.Add(MenuUiFactory.CreateLabel(
+                "Complete the first 5 nights or enter the password to unlock.",
+                "night-progress-description"));
+            _replayPassword = new TextField("PASSWORD")
+            {
+                name = "night-replay-password",
+                isPasswordField = true
+            };
+            _replayPassword.AddToClassList("settings-control");
+            _replayPassword.RegisterCallback<KeyDownEvent>(evt =>
+            {
+                if (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter)
+                {
+                    UnlockNightReplay();
+                    evt.StopPropagation();
+                }
+            });
+            _replayLockControls.Add(_replayPassword);
+            _replayLockControls.Add(MenuUiFactory.CreateButton(
+                "UNLOCK REPLAY", UnlockNightReplay, "unlock-night-replay-button"));
+            panel.Add(_replayLockControls);
+
+            _replayControls = new VisualElement();
+            _replayNightField = new IntegerField("NIGHT")
+            {
+                name = "night-replay-number",
+                value = 1
+            };
+            _replayNightField.AddToClassList("settings-control");
+            _replayControls.Add(_replayNightField);
+            _replayControls.Add(MenuUiFactory.CreateButton(
+                "PLAY SELECTED NIGHT", StartReplayNight, "start-night-replay-button"));
+            panel.Add(_replayControls);
+            _replayStatusLabel = MenuUiFactory.CreateLabel(string.Empty, "night-progress-description");
+            panel.Add(_replayStatusLabel);
+            RefreshNightReplayUi();
+        }
+
+        private void UnlockNightReplay()
+        {
+            bool unlocked = MenuPreferences.UnlockNightReplay(_replayPassword.value);
+            _replayPassword.value = string.Empty;
+            _replayStatusLabel.text = unlocked ? "Night replay unlocked." : "Incorrect password.";
+            RefreshNightReplayUi();
+        }
+
+        private void RefreshNightReplayUi()
+        {
+            bool unlocked = MenuPreferences.NightReplayUnlocked;
+            _replayLockControls.style.display = unlocked ? DisplayStyle.None : DisplayStyle.Flex;
+            _replayControls.style.display = unlocked ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private void StartReplayNight()
+        {
+            if (!MenuPreferences.SelectReplayNight(_replayNightField.value))
+            {
+                _replayStatusLabel.text = "Choose a night number of 1 or higher.";
+                return;
+            }
+
+            StartDemo();
         }
 
         private void ShowSettings()
@@ -197,6 +272,7 @@ namespace FiveNightsAtLidl.UI
         {
             MenuPreferences.ResetNightProgress();
             RefreshNightProgressUi();
+            RefreshNightReplayUi();
             _progressResetStatusLabel.text = "Progress reset. Night 1 is ready.";
             _progressResetStatusLabel.style.display = DisplayStyle.Flex;
         }

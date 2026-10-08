@@ -468,7 +468,7 @@ namespace FiveNightsAtLidl.UI
                 return;
             }
 
-            _nightNumber = MenuPreferences.CurrentNight;
+            _nightNumber = MenuPreferences.ConsumeNightToPlay();
             _elapsedNightSeconds = 0f;
             _batteryRemaining = StartingBatteryPercent;
             _displayedBatteryPercent = -1;
@@ -504,7 +504,7 @@ namespace FiveNightsAtLidl.UI
             _cabralRetreatElapsed = 0f;
             _cabralRetreatDelay = 0f;
             _cabralCameraStaticUntil = 0f;
-            _dorianThreatActive = _nightNumber >= 2;
+            _dorianThreatActive = _nightNumber >= 2 && GetDorianAiLevel() > 0;
             _dorianChargeHeld = false;
             _dorianBlenderCharge = DorianMaximumCharge;
             _dorianAngerElapsed = 0f;
@@ -2128,11 +2128,11 @@ namespace FiveNightsAtLidl.UI
                 case 1:
                     baseAi = 2;
                     break;
-                case 3:
-                    baseAi = 0;
-                    break;
                 case 2:
                     baseAi = 3;
+                    break;
+                case 3:
+                    baseAi = 1;
                     break;
                 case 4:
                     baseAi = 2;
@@ -2149,6 +2149,11 @@ namespace FiveNightsAtLidl.UI
                         0,
                         MaximumAiRoll);
                     break;
+            }
+
+            if (baseAi == 0)
+            {
+                return 0;
             }
 
             int hourBonus = 0;
@@ -2419,7 +2424,7 @@ namespace FiveNightsAtLidl.UI
                     baseAi = 1;
                     break;
                 case 3:
-                    baseAi = 5;
+                    baseAi = 1;
                     break;
                 case 4:
                     baseAi = 4;
@@ -2436,6 +2441,11 @@ namespace FiveNightsAtLidl.UI
                         0,
                         MaximumAiRoll);
                     break;
+            }
+
+            if (baseAi == 0)
+            {
+                return 0;
             }
 
             int hourBonus = 0;
@@ -2619,16 +2629,16 @@ namespace FiveNightsAtLidl.UI
                     baseAi = 1;
                     break;
                 case 3:
-                    baseAi = 2;
+                    baseAi = 1;
                     break;
                 case 4:
-                    baseAi = 6;
+                    baseAi = 2;
                     break;
                 case 5:
-                    baseAi = 5;
+                    baseAi = 3;
                     break;
                 case 6:
-                    baseAi = 6;
+                    baseAi = 4;
                     break;
                 default:
                     baseAi = Mathf.Clamp(
@@ -2636,6 +2646,11 @@ namespace FiveNightsAtLidl.UI
                         0,
                         MaximumAiRoll);
                     break;
+            }
+
+            if (baseAi == 0)
+            {
+                return 0;
             }
 
             int hourBonus = 0;
