@@ -35,7 +35,6 @@ namespace FiveNightsAtLidl.UI
         private const float PowerFailureChanceStep = 0.05f;
         private const float VictoryLightsOutHoldSeconds = 0.3f;
         private const float VictoryBlackoutFadeSeconds = 1.35f;
-        private const int FirstPhoneCallNight = 1;
         private const string BolojanTaxMessage = "BOLOJAN TAX";
         private const string ElectricityWastedMessage = "ELECTRICITY WASTED";
         private const string SellyCameraFourId = "CAM 04";
@@ -298,6 +297,9 @@ namespace FiveNightsAtLidl.UI
         [Header("Phone Calls")]
         [SerializeField]
         private AudioClip _nightOnePhoneCallClip;
+
+        [SerializeField]
+        private AudioClip _nightFourPhoneCallClip;
 
         [SerializeField, Min(0f)]
         [Tooltip("Seconds after the playable night begins before the call starts.")]
@@ -2820,7 +2822,7 @@ namespace FiveNightsAtLidl.UI
             _phoneCallAudioSource.loop = false;
             _phoneCallAudioSource.spatialBlend = 0f;
             _phoneCallAudioSource.volume = _phoneCallVolume;
-            _phoneCallAudioSource.clip = _nightOnePhoneCallClip;
+            _phoneCallAudioSource.clip = GetNightPhoneCallClip();
 
             if (_nightAmbienceAudioSource == null)
             {
@@ -2893,11 +2895,24 @@ namespace FiveNightsAtLidl.UI
             }
         }
 
+        private AudioClip GetNightPhoneCallClip()
+        {
+            switch (_nightNumber)
+            {
+                case 1:
+                    return _nightOnePhoneCallClip;
+                case 4:
+                    return _nightFourPhoneCallClip;
+                default:
+                    return null;
+            }
+        }
+
         private void UpdatePhoneCall()
         {
+            AudioClip phoneCallClip = GetNightPhoneCallClip();
             if (_phoneCallMuted ||
-                _nightNumber != FirstPhoneCallNight ||
-                _nightOnePhoneCallClip == null ||
+                phoneCallClip == null ||
                 _phoneCallAudioSource == null)
             {
                 return;
@@ -2912,7 +2927,7 @@ namespace FiveNightsAtLidl.UI
 
                 _phoneCallStarted = true;
                 _phoneCallActive = true;
-                _phoneCallAudioSource.clip = _nightOnePhoneCallClip;
+                _phoneCallAudioSource.clip = phoneCallClip;
                 _phoneCallAudioSource.volume = _phoneCallVolume;
                 _phoneCallAudioSource.Play();
                 RefreshPhoneCallControls();
@@ -3619,6 +3634,7 @@ namespace FiveNightsAtLidl.UI
             AudioClip officeFightPresenceClip,
             Texture2D officeNightFourBackground,
             AudioClip nightOnePhoneCallClip,
+            AudioClip nightFourPhoneCallClip,
             AudioClip nightAmbienceClip,
             AudioClip doorControlClip,
             AudioClip lightControlClip,
@@ -3667,6 +3683,7 @@ namespace FiveNightsAtLidl.UI
             _officeFightPresenceClip = officeFightPresenceClip;
             _officeNightFourBackground = officeNightFourBackground;
             _nightOnePhoneCallClip = nightOnePhoneCallClip;
+            _nightFourPhoneCallClip = nightFourPhoneCallClip;
             _nightAmbienceClip = nightAmbienceClip;
             _doorControlClip = doorControlClip;
             _lightControlClip = lightControlClip;

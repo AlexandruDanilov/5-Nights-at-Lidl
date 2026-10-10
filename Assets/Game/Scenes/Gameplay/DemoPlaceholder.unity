@@ -309,6 +309,7 @@ MonoBehaviour:
   _bostanicaBeregoiMaximumSpawnOffsetSeconds: 55
   _bostanicaBeregoiDoorGraceSeconds: 2
   _nightOnePhoneCallClip: {fileID: 8300000, guid: d8f2a4c5b6e741e9a31f5270dc8b149e, type: 3}
+  _nightFourPhoneCallClip: {fileID: 8300000, guid: 1b19e8a742d14afdb071d563b9ea7394, type: 3}
   _phoneCallStartDelaySeconds: 10
   _phoneCallVolume: 0.8
   _nightAmbienceClip: {fileID: 8300000, guid: 43edb1560efa451f85ff7741156d42bc, type: 3}
