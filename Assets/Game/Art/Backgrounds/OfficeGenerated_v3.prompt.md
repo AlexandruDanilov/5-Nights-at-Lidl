@@ -1,5 +1,9 @@
 # OfficeGenerated_v3 generation prompts
 
+The following describes the original full-frame state generation. The live
+door/light/character states were subsequently rebuilt as fixed-aperture RGBA
+overlays; see `OfficeDoorwayAligned.prompt.md` for the current workflow/prompts.
+
 Mode: built-in image-generation edit mode
 
 Final assets:

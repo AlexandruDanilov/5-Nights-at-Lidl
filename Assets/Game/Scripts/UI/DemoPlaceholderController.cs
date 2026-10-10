@@ -951,6 +951,9 @@ namespace FiveNightsAtLidl.UI
             string side,
             out Image stateImage)
         {
+            // Door states are full-canvas RGBA overlays with pixels only inside
+            // the opening. Match the base image's bounds/crop exactly; the shared
+            // office background owns the stationary metal frames and props.
             VisualElement clip = new VisualElement { name = $"{side}-office-state" };
             clip.pickingMode = PickingMode.Ignore;
             clip.AddToClassList("office-state-clip");

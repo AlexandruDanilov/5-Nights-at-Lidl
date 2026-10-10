@@ -196,6 +196,14 @@ The open left side leads into the supermarket checkout section. When its light
 is active, ruined checkout lanes, abandoned equipment, and a heavily decayed
 store interior become visible beyond the doorway.
 
+Door, light and doorway-character states are native-resolution 1672×941 RGBA
+overlays confined to the openings. They share the base image's exact full-screen
+crop; metal frames, thresholds and all office props come from one stationary
+background. Cabral and Selly are composited onto the same respective empty-light
+room so furniture cannot shift when either character appears. Office texture
+imports preserve native dimensions, disable mipmaps and use clamp/uncompressed
+sampling to keep the layers registered at different window aspect ratios.
+
 The open right side leads into a neglected employee break room. When its light
 is active, battered lockers, broken staff furniture, old appliances, abandoned
 belongings, and a heavily decayed staff area become visible beyond the doorway.

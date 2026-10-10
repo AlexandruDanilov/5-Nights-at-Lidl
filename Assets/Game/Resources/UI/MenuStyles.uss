@@ -92,33 +92,18 @@
 
 .office-state-clip {
     position: absolute;
+    left: 0;
+    right: 0;
     top: 0;
     bottom: 0;
-    width: 36%;
-    overflow: hidden;
-}
-
-.office-state-left {
-    left: 0;
-}
-
-.office-state-right {
-    right: 0;
 }
 
 .office-state-image {
     position: absolute;
+    left: 0;
+    right: 0;
     top: 0;
     bottom: 0;
-    width: 277.778%;
-}
-
-.office-state-left .office-state-image {
-    left: 0;
-}
-
-.office-state-right .office-state-image {
-    left: -177.778%;
 }
 
 .menu-content {
