@@ -116,7 +116,11 @@ namespace FiveNightsAtLidl.UI
             _settingsOverlay.AddToClassList("settings-overlay");
             _settingsOverlay.style.display = DisplayStyle.None;
 
-            ScrollView panel = new ScrollView(ScrollViewMode.Vertical);
+            ScrollView panel = new ScrollView(ScrollViewMode.Vertical)
+            {
+                verticalScrollerVisibility = ScrollerVisibility.Hidden,
+                horizontalScrollerVisibility = ScrollerVisibility.Hidden
+            };
             panel.AddToClassList("settings-panel");
             panel.Add(MenuUiFactory.CreateLabel("SETTINGS", "panel-title"));
             panel.Add(MenuUiFactory.CreateLabel(
@@ -147,6 +151,25 @@ namespace FiveNightsAtLidl.UI
                 MenuPreferences.Fullscreen = change.newValue;
             });
             panel.Add(fullscreen);
+
+            SliderInt aggressionReduction = new SliderInt("AGGRESSION REDUCTION", -5, 5)
+            {
+                name = "aggression-reduction-slider",
+                value = MenuPreferences.AggressionReduction,
+                showInputField = true
+            };
+            aggressionReduction.AddToClassList("settings-control");
+            aggressionReduction.RegisterValueChangedCallback(change =>
+            {
+                MenuPreferences.AggressionReduction = change.newValue;
+                aggressionReduction.SetValueWithoutNotify(MenuPreferences.AggressionReduction);
+            });
+            panel.Add(aggressionReduction);
+            Label aggressionDescription = MenuUiFactory.CreateLabel(
+                "0: normal. +5: 5 AI points easier. -5: 5 AI points harder.\nApplies to Selly, Cabral and Dorian on every night.",
+                "night-progress-description");
+            aggressionDescription.style.whiteSpace = WhiteSpace.Normal;
+            panel.Add(aggressionDescription);
 
             panel.Add(MenuUiFactory.CreateLabel(
                 "NIGHT PROGRESS",

@@ -59,7 +59,7 @@ namespace FiveNightsAtLidl.UI
         private const long DorianChargeRepeatIntervalMilliseconds = 50L;
         private const float DorianChargePulseGraceSeconds = 0.12f;
         private const int MaximumAiRoll = 25;
-        private const int AutomaticAggressionReduction = 1;
+        private static int AutomaticAggressionReduction => MenuPreferences.AggressionReduction;
         private const float DorianMaximumAggressionAi = 10f;
         private const int FirstOfficeFightNight = 4;
         private const long OfficeFightBlackoutEndMilliseconds = 960L;
@@ -129,7 +129,7 @@ namespace FiveNightsAtLidl.UI
 
         [SerializeField, Range(0f, 1f)]
         [Tooltip("Chance that Bolojan appears whenever CAM 01 or CAM 07 is entered.")]
-        private float _bolojanAppearanceChance = 0.1f;
+        private float _bolojanAppearanceChance = 0.3f;
 
         [SerializeField, Min(0.1f)]
         [Tooltip("Uninterrupted seconds spent looking at Bolojan before he attacks.")]
@@ -278,17 +278,7 @@ namespace FiveNightsAtLidl.UI
         [SerializeField, Range(0f, 1f)]
         private float _officeFightPresenceVolume = 0.32f;
 
-        [SerializeField, Range(0f, 1f)]
-        [Tooltip("One independent appearance roll at the beginning of every in-game hour.")]
-        private float _bostanicaBeregoiHourlyChance = 0.5f;
-
-        [SerializeField, Min(0f)]
-        [Tooltip("Earliest second within a successful hour that the fight can begin.")]
-        private float _bostanicaBeregoiMinimumSpawnOffsetSeconds = 3f;
-
-        [SerializeField, Min(0f)]
-        [Tooltip("Latest second within a successful hour that the fight can begin.")]
-        private float _bostanicaBeregoiMaximumSpawnOffsetSeconds = 55f;
+        private int _bostanicaBeregoiCameraAppearancePercent = 18;
 
         [SerializeField, Min(0f)]
         [Tooltip("Safe door-use window after the camera monitor first reveals the fight.")]
@@ -446,11 +436,8 @@ namespace FiveNightsAtLidl.UI
         private float _dorianBlenderCharge;
         private float _dorianAngerElapsed;
         private float _dorianChargePulseUntil;
-        private float _officeFightSpawnAtNightSecond;
         private float _officeFightDoorDangerAt;
-        private int _officeFightScheduledHour;
         private bool _officeFightThreatEnabled;
-        private bool _officeFightSpawnPending;
         private bool _officeFightActive;
         private bool _phoneCallStarted;
         private bool _phoneCallActive;
@@ -512,10 +499,7 @@ namespace FiveNightsAtLidl.UI
             _dorianAngerElapsed = 0f;
             _dorianChargePulseUntil = 0f;
             _officeFightThreatEnabled = _nightNumber >= FirstOfficeFightNight;
-            _officeFightSpawnPending = false;
             _officeFightActive = false;
-            _officeFightScheduledHour = -1;
-            _officeFightSpawnAtNightSecond = -1f;
             _officeFightDoorDangerAt = 0f;
             _phoneCallStarted = false;
             _phoneCallActive = false;
@@ -640,9 +624,6 @@ namespace FiveNightsAtLidl.UI
                 UpdateDorianThreat(elapsedSeconds);
                 return;
             }
-
-            UpdateOfficeFightThreat();
-
             UpdateBolojanThreat(elapsedSeconds);
             if (_bolojanJumpscareActive || _nightEnded)
             {
@@ -766,7 +747,6 @@ namespace FiveNightsAtLidl.UI
         {
             _nightStarted = true;
             StartNightAmbience();
-            ScheduleOfficeFightForHour(0);
             if (_nightIntroOverlay != null)
             {
                 _nightIntroOverlay.style.display = DisplayStyle.None;
@@ -1109,58 +1089,26 @@ namespace FiveNightsAtLidl.UI
             PlayOfficeControlSound(_doorControlClip, _doorControlVolume);
         }
 
-        private void UpdateOfficeFightThreat()
+        private void TrySpawnOfficeFightOnCameraRaise()
         {
             if (!_officeFightThreatEnabled ||
-                !_officeFightSpawnPending ||
                 _officeFightActive ||
+                !_nightStarted ||
                 _nightEnded ||
                 _powerFailureActive ||
-                !IsCameraDashboardOpen())
+                !IsCameraDashboardOpen() ||
+                (_officeFightBlackoutOverlay != null &&
+                    _officeFightBlackoutOverlay.style.display.value != DisplayStyle.None))
             {
                 return;
             }
 
-            if (_elapsedNightSeconds < _officeFightSpawnAtNightSecond)
+            // Integer Random.Range excludes its upper bound: exactly 1..100.
+            int roll = Random.Range(1, 101);
+            if (roll <= Mathf.Clamp(_bostanicaBeregoiCameraAppearancePercent, 0, 100))
             {
-                return;
+                SetOfficeFightActive(true);
             }
-
-            _officeFightSpawnPending = false;
-            SetOfficeFightActive(true);
-        }
-
-        private void ScheduleOfficeFightForHour(int hour)
-        {
-            if (_officeFightScheduledHour == hour)
-            {
-                return;
-            }
-
-            _officeFightScheduledHour = hour;
-            _officeFightSpawnPending = false;
-            _officeFightSpawnAtNightSecond = -1f;
-
-            if (!_officeFightThreatEnabled ||
-                _officeFightActive ||
-                hour < 0 ||
-                hour >= FinalHour ||
-                Random.value >= Mathf.Clamp01(_bostanicaBeregoiHourlyChance))
-            {
-                return;
-            }
-
-            float maximumOffset = Mathf.Clamp(
-                _bostanicaBeregoiMaximumSpawnOffsetSeconds,
-                0f,
-                SecondsPerGameHour - 0.01f);
-            float minimumOffset = Mathf.Clamp(
-                _bostanicaBeregoiMinimumSpawnOffsetSeconds,
-                0f,
-                maximumOffset);
-            float spawnOffset = Random.Range(minimumOffset, maximumOffset);
-            _officeFightSpawnAtNightSecond = hour * SecondsPerGameHour + spawnOffset;
-            _officeFightSpawnPending = true;
         }
 
         private void SetOfficeFightActive(bool active)
@@ -1837,7 +1785,7 @@ namespace FiveNightsAtLidl.UI
 
         private void ShowCameraDashboard()
         {
-            if (_nightEnded || _powerFailureActive)
+            if (_nightEnded || _powerFailureActive || IsCameraDashboardOpen())
             {
                 return;
             }
@@ -1847,6 +1795,7 @@ namespace FiveNightsAtLidl.UI
             _officeControlsLayer.style.display = DisplayStyle.None;
             _cameraDashboard.style.display = DisplayStyle.Flex;
             _cameraDashboard.BringToFront();
+            TrySpawnOfficeFightOnCameraRaise();
             _clockLabel.parent.BringToFront();
             _batteryLabel.parent.BringToFront();
             RefreshDorianBlenderControls();
@@ -2432,13 +2381,13 @@ namespace FiveNightsAtLidl.UI
                     baseAi = 1;
                     break;
                 case 4:
-                    baseAi = 4;
+                    baseAi = 3;
                     break;
                 case 5:
-                    baseAi = 7;
+                    baseAi = 5;
                     break;
                 case 6:
-                    baseAi = 12;
+                    baseAi = 10;
                     break;
                 default:
                     baseAi = Mathf.Clamp(
@@ -2455,11 +2404,6 @@ namespace FiveNightsAtLidl.UI
 
             int hourBonus = 0;
             if (_displayedHour >= 3)
-            {
-                hourBonus++;
-            }
-
-            if (_displayedHour >= 4)
             {
                 hourBonus++;
             }
@@ -2637,13 +2581,13 @@ namespace FiveNightsAtLidl.UI
                     baseAi = 1;
                     break;
                 case 4:
-                    baseAi = 2;
+                    baseAi = 1;
                     break;
                 case 5:
-                    baseAi = 3;
+                    baseAi = 2;
                     break;
                 case 6:
-                    baseAi = 4;
+                    baseAi = 3;
                     break;
                 default:
                     baseAi = Mathf.Clamp(
@@ -2659,11 +2603,6 @@ namespace FiveNightsAtLidl.UI
             }
 
             int hourBonus = 0;
-            if (_displayedHour >= 3)
-            {
-                hourBonus++;
-            }
-
             if (_displayedHour >= 4)
             {
                 hourBonus++;
@@ -3485,7 +3424,6 @@ namespace FiveNightsAtLidl.UI
             StopPhoneCall();
             StopNightAmbience();
             _powerFailureActive = false;
-            _officeFightSpawnPending = false;
             SetOfficeFightActive(false);
             DismissBolojan();
             DeactivateSellyThreat();
@@ -3706,17 +3644,9 @@ namespace FiveNightsAtLidl.UI
                 return;
             }
 
-            int previousHour = _displayedHour;
             _displayedHour = completedHours;
             int clockHour = completedHours == 0 ? 12 : completedHours;
             _clockLabel.text = $"{clockHour} AM";
-
-            if (_nightStarted &&
-                completedHours != previousHour &&
-                completedHours < FinalHour)
-            {
-                ScheduleOfficeFightForHour(completedHours);
-            }
         }
 
         private void DrainBattery(float elapsedSeconds)

@@ -1,5 +1,11 @@
 # Cabral asset generation notes
 
+The live doorway frame has been redrawn using the approved CAM 01/02/06
+likeness, with a stern gaze and dim overhead shadows. It is now a 1672×941 RGBA
+aperture overlay over the same dim checkout room as the empty-light state.
+See `../../Backgrounds/OfficeDoorwayCreepy.prompt.md` for current prompts.
+The following records the original camera/jumpscare and doorway generation.
+
 Generated with the built-in image generation tool in identity-preserving edit/
 composite mode. The three supplied Cabral photographs were used together as
 identity references. Each camera frame also used its matching stock feed as the

@@ -10,6 +10,7 @@ namespace FiveNightsAtLidl.UI
     {
         private const string MasterVolumeKey = "settings.master_volume";
         private const string FullscreenKey = "settings.fullscreen";
+        private const string AggressionReductionKey = "settings.aggression_reduction";
         private const string CurrentNightKey = "progress.current_night";
         private const string NightReplayUnlockedKey = "settings.night_replay_unlocked";
         private static int _replayNight;
@@ -74,6 +75,16 @@ namespace FiveNightsAtLidl.UI
         {
             get => Mathf.Max(1, PlayerPrefs.GetInt(CurrentNightKey, 1));
             private set => PlayerPrefs.SetInt(CurrentNightKey, Mathf.Max(1, value));
+        }
+
+        public static int AggressionReduction
+        {
+            get => Mathf.Clamp(PlayerPrefs.GetInt(AggressionReductionKey, 0), -5, 5);
+            set
+            {
+                PlayerPrefs.SetInt(AggressionReductionKey, Mathf.Clamp(value, -5, 5));
+                Save();
+            }
         }
 
         public static void CompleteNight(int completedNight)

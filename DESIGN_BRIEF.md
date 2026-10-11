@@ -466,18 +466,21 @@ is a tense but consistently understandable demo, not extreme difficulty.
   aligned beside the camera button for the whole shift. Every pixel outside the
   bottle matte remains identical to the standard office background, preventing
   seams when the independent doorway-light frames are shown.
-- At the start of every in-game hour from 12 AM through 5 AM, the pair gets one
-  independent **50% appearance roll**. A successful roll chooses a random point
-  from 3–55 seconds into that hour, so their arrival is not tied to the clock
-  transition. The chance and timing window are exposed in the gameplay
-  controller for balancing.
+- Each time the player raises the camera monitor, the pair gets one independent
+  **18% appearance roll**: an integer from 1–100 is generated and 1–18 spawns
+  them immediately behind the raised monitor. There are no hourly rolls and no
+  repeated rolls while the monitor remains up or when switching feeds. The
+  percentage is code-only: edit `_bostanicaBeregoiCameraAppearancePercent` in
+  `DemoPlaceholderController.cs`, let Unity recompile and restart the night.
+  Scene serialization and the Inspector do not override this value.
+  No roll occurs while they are already present or during their spray animation.
 - When they appear, a transparent full-canvas foreground layer shows them
   standing behind the desk and yelling at each other. It renders above the
   independent door/light states, so illuminating either doorway cannot crop or
   cover the women. A matching bottle foreground matte renders above them so the
   desk prop correctly occludes their bodies instead of intersecting them. They
   remain there indefinitely, including across later hour changes, until the
-  player uses the spray bottle. A scheduled appearance waits until the camera
+  player uses the spray bottle. An appearance happens only when the camera
   monitor is raised, so the office transition happens behind the CCTV interface
   and cannot collide with a door press. When the monitor is lowered and the pair
   is first revealed, a **2-second door grace period** begins; doors work normally
@@ -581,6 +584,17 @@ exact needs. The likely minimum inventory is listed below.
 - Character attack/jumpscare frames.
 - 6 AM/victory presentation.
 - Application icon.
+
+### Player aggression modifier
+
+Settings includes an **AGGRESSION REDUCTION** integer slider with a number input
+from **-5 to +5**, saved automatically and defaulting to **0**. Every night's
+automatic Selly, Cabral and Dorian AI subtracts this value after adding its hour
+bonuses: +5 removes five AI points, while -5 adds five. Final AI remains clamped
+to 0–25. Base AI zero remains disabled, and nonnegative Inspector overrides
+bypass automatic modifiers. The separate Night 5 reduction for Selly/Cabral
+still applies. Bolojan and the girls are not affected. Dorian's AI changes blender
+drain speed, not the length of his anger stages.
 
 ### Audio
 

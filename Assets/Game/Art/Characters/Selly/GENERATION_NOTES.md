@@ -1,5 +1,11 @@
 # Selly asset generation notes
 
+The live doorway frame has been redrawn using the approved CAM 04/05/07/08
+likeness, with a stern stare, dim overhead shadows and his gold left-wrist watch.
+It is now a 1672×941 RGBA aperture overlay over the same dim employees room as
+the empty-light state. See `../../Backgrounds/OfficeDoorwayCreepy.prompt.md`
+for current prompts. The following records the original asset generation.
+
 Generated with the built-in image-generation tool in identity-preserving compositing mode. Final assets are 1672 x 941 RGB PNGs and follow the planned route:
 
 `CAM 04 -> CAM 05 -> CAM 07 -> CAM 08 -> right office door -> jumpscare`

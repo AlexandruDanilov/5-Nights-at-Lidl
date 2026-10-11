@@ -1,5 +1,9 @@
 # Aligned office doorway assets
 
+The current dim-light and shadow-lit character revision is documented in
+`OfficeDoorwayCreepy.prompt.md`. The fixed aperture system described below
+remains in use; the prompts and RGB grading below describe the earlier art pass.
+
 Backup before replacement: Git commit `c75e359`, pushed to `origin/main`.
 
 Generated with the built-in image-generation tool, then resized, positioned,
