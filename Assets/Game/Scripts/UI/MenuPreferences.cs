@@ -13,8 +13,44 @@ namespace FiveNightsAtLidl.UI
         private const string AggressionReductionKey = "settings.aggression_reduction";
         private const string CurrentNightKey = "progress.current_night";
         private const string NightReplayUnlockedKey = "settings.night_replay_unlocked";
+        private const string CustomNightSettingsKey = "settings.custom_night";
         private static int _replayNight;
         private static bool _playingReplay;
+        private static CustomNightSettings _pendingCustomNight;
+        public static CustomNightSettings ActiveCustomNight { get; private set; }
+
+        public static CustomNightSettings LoadCustomNightSettings()
+        {
+            CustomNightSettings settings;
+            try
+            {
+                settings = JsonUtility.FromJson<CustomNightSettings>(
+                    PlayerPrefs.GetString(CustomNightSettingsKey, string.Empty));
+            }
+            catch (System.ArgumentException)
+            {
+                settings = null;
+            }
+            settings = settings ?? new CustomNightSettings();
+            settings.Validate();
+            return settings;
+        }
+
+        public static void SaveCustomNightSettings(CustomNightSettings settings)
+        {
+            settings.Validate();
+            PlayerPrefs.SetString(CustomNightSettingsKey, JsonUtility.ToJson(settings));
+            Save();
+        }
+
+        public static bool SelectCustomNight(CustomNightSettings settings)
+        {
+            if (!NightReplayUnlocked) return false;
+            settings.Validate();
+            _pendingCustomNight = settings.Copy();
+            _replayNight = 0;
+            return true;
+        }
 
         public static bool NightReplayUnlocked =>
             CurrentNight >= 6 || PlayerPrefs.GetInt(NightReplayUnlockedKey, 0) == 1;
@@ -39,13 +75,17 @@ namespace FiveNightsAtLidl.UI
             }
 
             _replayNight = night;
+            _pendingCustomNight = null;
             return true;
         }
 
         public static int ConsumeNightToPlay()
         {
-            _playingReplay = _replayNight > 0;
-            int night = _replayNight > 0 ? _replayNight : CurrentNight;
+            ActiveCustomNight = _pendingCustomNight;
+            _pendingCustomNight = null;
+            _playingReplay = _replayNight > 0 || ActiveCustomNight != null;
+            int night = ActiveCustomNight != null ? 1
+                : (_replayNight > 0 ? _replayNight : CurrentNight);
             _replayNight = 0;
             return night;
         }
@@ -77,12 +117,13 @@ namespace FiveNightsAtLidl.UI
             private set => PlayerPrefs.SetInt(CurrentNightKey, Mathf.Max(1, value));
         }
 
-        public static int AggressionReduction
+        public static int Aggression
         {
-            get => Mathf.Clamp(PlayerPrefs.GetInt(AggressionReductionKey, 0), -5, 5);
+            // Keep the legacy storage sign so existing saves retain their difficulty.
+            get => -Mathf.Clamp(PlayerPrefs.GetInt(AggressionReductionKey, 0), -5, 5);
             set
             {
-                PlayerPrefs.SetInt(AggressionReductionKey, Mathf.Clamp(value, -5, 5));
+                PlayerPrefs.SetInt(AggressionReductionKey, -Mathf.Clamp(value, -5, 5));
                 Save();
             }
         }
@@ -102,6 +143,8 @@ namespace FiveNightsAtLidl.UI
         {
             _replayNight = 0;
             CurrentNight = 1;
+            _pendingCustomNight = null;
+            ActiveCustomNight = null;
             Save();
         }
 

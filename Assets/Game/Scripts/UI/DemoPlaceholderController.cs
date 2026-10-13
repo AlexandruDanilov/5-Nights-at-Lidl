@@ -63,7 +63,8 @@ namespace FiveNightsAtLidl.UI
         private const long DorianChargeRepeatIntervalMilliseconds = 50L;
         private const float DorianChargePulseGraceSeconds = 0.12f;
         private const int MaximumAiRoll = 25;
-        private static int AutomaticAggressionReduction => MenuPreferences.AggressionReduction;
+        private static int AutomaticAggressionReduction => -MenuPreferences.Aggression;
+        private CustomNightSettings CustomNight => MenuPreferences.ActiveCustomNight;
         private const float DorianMaximumAggressionAi = 10f;
         private const int FirstOfficeFightNight = 4;
         private const long OfficeFightBlackoutEndMilliseconds = 960L;
@@ -514,7 +515,7 @@ namespace FiveNightsAtLidl.UI
             _powerFailureActive = false;
             _victoryTransitionActive = false;
             _resultWasVictory = false;
-            _sellyThreatActive = true;
+            _sellyThreatActive = CustomNight == null || CustomNight.GetAi(CustomNightSettings.Selly) > 0;
             _sellyRetreatPending = false;
             _sellyRouteIndex = 0;
             _sellyMovementOpportunityElapsed = 0f;
@@ -522,7 +523,7 @@ namespace FiveNightsAtLidl.UI
             _sellyRetreatElapsed = 0f;
             _sellyRetreatDelay = 0f;
             _sellyCameraStaticUntil = 0f;
-            _cabralThreatActive = true;
+            _cabralThreatActive = CustomNight == null || CustomNight.GetAi(CustomNightSettings.Cabral) > 0;
             _cabralRetreatPending = false;
             _cabralRouteIndex = 0;
             _cabralMovementOpportunityElapsed = 0f;
@@ -530,12 +531,16 @@ namespace FiveNightsAtLidl.UI
             _cabralRetreatElapsed = 0f;
             _cabralRetreatDelay = 0f;
             _cabralCameraStaticUntil = 0f;
-            _dorianThreatActive = _nightNumber >= 2 && GetDorianAiLevel() > 0;
+            _dorianThreatActive = CustomNight != null
+                ? CustomNight.GetAi(CustomNightSettings.Dorian) > 0
+                : _nightNumber >= 2 && GetDorianAiLevel() > 0;
             _dorianChargeHeld = false;
             _dorianBlenderCharge = DorianMaximumCharge;
             _dorianAngerElapsed = 0f;
             _dorianChargePulseUntil = 0f;
-            _officeFightThreatEnabled = _nightNumber >= FirstOfficeFightNight;
+            _officeFightThreatEnabled = CustomNight != null
+                ? CustomNight.GetAi(CustomNightSettings.Girls, 5) > 0
+                : _nightNumber >= FirstOfficeFightNight;
             _officeFightActive = false;
             _officeFightDoorDangerAt = 0f;
             _phoneCallStarted = false;
@@ -544,7 +549,7 @@ namespace FiveNightsAtLidl.UI
             _officeFightSprayAnimationGeneration++;
             _forcedCameraThreatFlickerUntil = 0f;
             _lossTitle = ElectricityWastedMessage;
-            _lossMessage = $"Night {_nightNumber} ended in darkness.";
+            _lossMessage = CustomNight != null ? "Custom Night ended in darkness." : $"Night {_nightNumber} ended in darkness.";
             _bolojanExposureElapsed = 0f;
             _bolojanJumpscareElapsed = 0f;
             _powerFailureElapsed = 0f;
@@ -554,8 +559,8 @@ namespace FiveNightsAtLidl.UI
             _powerFailureRollCount = 0;
             _activeCameraId = BolojanCameraOneId;
             _roomsOccupiedByOtherThreats.Clear();
-            _roomsOccupiedByOtherThreats.Add(SellyCameraFourId);
-            _roomsOccupiedByOtherThreats.Add(CabralCameraOneId);
+            if (_sellyThreatActive) _roomsOccupiedByOtherThreats.Add(SellyCameraFourId);
+            if (_cabralThreatActive) _roomsOccupiedByOtherThreats.Add(CabralCameraOneId);
             if (_dorianThreatActive)
             {
                 _roomsOccupiedByOtherThreats.Add(DorianCameraId);
@@ -775,7 +780,7 @@ namespace FiveNightsAtLidl.UI
             _nightIntroOverlay = new VisualElement { name = "night-intro-overlay" };
             _nightIntroOverlay.AddToClassList("night-intro-overlay");
             _nightIntroOverlay.Add(MenuUiFactory.CreateLabel(
-                $"NIGHT {_nightNumber}",
+                CustomNight != null ? "CUSTOM NIGHT" : $"NIGHT {_nightNumber}",
                 "night-intro-title"));
             root.Add(_nightIntroOverlay);
             _nightIntroOverlay.BringToFront();
@@ -1248,7 +1253,10 @@ namespace FiveNightsAtLidl.UI
 
             // Integer Random.Range excludes its upper bound: exactly 1..100.
             int roll = Random.Range(1, 101);
-            if (roll <= Mathf.Clamp(_bostanicaBeregoiCameraAppearancePercent, 0, 100))
+            int chance = CustomNight != null
+                ? CustomNight.GetAi(CustomNightSettings.Girls, Mathf.Max(0, _displayedHour)) * 4
+                : _bostanicaBeregoiCameraAppearancePercent;
+            if (roll <= Mathf.Clamp(chance, 0, 100))
             {
                 SetOfficeFightActive(true);
             }
@@ -2222,6 +2230,8 @@ namespace FiveNightsAtLidl.UI
 
         private int GetSellyAiLevel()
         {
+            if (CustomNight != null)
+                return CustomNight.GetAi(CustomNightSettings.Selly, Mathf.Max(0, _displayedHour));
             if (_sellyAiOverride >= 0)
             {
                 return Mathf.Clamp(_sellyAiOverride, 0, MaximumAiRoll);
@@ -2514,6 +2524,8 @@ namespace FiveNightsAtLidl.UI
 
         private int GetCabralAiLevel()
         {
+            if (CustomNight != null)
+                return CustomNight.GetAi(CustomNightSettings.Cabral, Mathf.Max(0, _displayedHour));
             if (_cabralAiOverride >= 0)
             {
                 return Mathf.Clamp(_cabralAiOverride, 0, MaximumAiRoll);
@@ -2707,13 +2719,15 @@ namespace FiveNightsAtLidl.UI
                 nightTwoDuration);
             float aggression = Mathf.InverseLerp(
                 1f,
-                DorianMaximumAggressionAi,
+                CustomNight != null ? MaximumAiRoll : DorianMaximumAggressionAi,
                 GetDorianAiLevel());
             return Mathf.Lerp(nightTwoDuration, maximumAggressionDuration, aggression);
         }
 
         private int GetDorianAiLevel()
         {
+            if (CustomNight != null)
+                return CustomNight.GetAi(CustomNightSettings.Dorian, Mathf.Max(0, _displayedHour));
             if (_dorianAiOverride >= 0)
             {
                 return Mathf.Clamp(_dorianAiOverride, 0, MaximumAiRoll);
@@ -2990,6 +3004,7 @@ namespace FiveNightsAtLidl.UI
 
         private AudioClip GetNightPhoneCallClip()
         {
+            if (CustomNight != null) return null;
             switch (_nightNumber)
             {
                 case 1:
@@ -3211,7 +3226,10 @@ namespace FiveNightsAtLidl.UI
             Texture2D appearanceTexture = cameraId == BolojanCameraOneId
                 ? _bolojanCameraOneTexture
                 : _bolojanCameraSevenTexture;
-            if (appearanceTexture == null || Random.value >= _bolojanAppearanceChance)
+            float appearanceChance = CustomNight != null
+                ? CustomNight.GetAi(CustomNightSettings.Bolojan, Mathf.Max(0, _displayedHour)) / 25f
+                : _bolojanAppearanceChance;
+            if (appearanceTexture == null || Random.value >= appearanceChance)
             {
                 return;
             }
@@ -3540,6 +3558,8 @@ namespace FiveNightsAtLidl.UI
 
         private bool TryPowerFailureJumpscare()
         {
+            if (CustomNight != null && CustomNight.GetAi(CustomNightSettings.Bolojan, Mathf.Max(0, _displayedHour)) == 0)
+                return false;
             _powerFailureRollCount++;
             float attackChance = Mathf.Clamp01(
                 PowerFailureInitialChance +
@@ -3648,7 +3668,15 @@ namespace FiveNightsAtLidl.UI
         {
             _resultWasVictory = victory;
             _resultTitleLabel.EnableInClassList("night-result-loss-title", !victory);
-            if (victory)
+            if (CustomNight != null)
+            {
+                _resultTitleLabel.text = victory ? "CUSTOM SHIFT ENDED" : _lossTitle;
+                _resultMessageLabel.text = victory
+                    ? "Custom Night complete.\nStory progress is unchanged."
+                    : _lossMessage;
+                _resultPrimaryButton.text = victory ? "PLAY CUSTOM NIGHT AGAIN" : "RETRY CUSTOM NIGHT";
+            }
+            else if (victory)
             {
                 int nextNight = MenuPreferences.CurrentNight;
                 _resultTitleLabel.text = "SHIFT ENDED";
@@ -3670,6 +3698,12 @@ namespace FiveNightsAtLidl.UI
 
         private void HandleResultPrimaryAction()
         {
+            if (CustomNight != null)
+            {
+                CustomNightSettings next = CustomNight.Copy();
+                // Selecting a fresh snapshot preserves the same preset for replay.
+                if (!MenuPreferences.SelectCustomNight(next)) return;
+            }
             if (_resultWasVictory)
             {
                 MenuPreferences.Save();
@@ -3819,6 +3853,37 @@ namespace FiveNightsAtLidl.UI
             }
 
             _displayedHour = completedHours;
+            if (CustomNight != null && _nightStarted && !_nightEnded && completedHours < FinalHour)
+            {
+                bool activated = false;
+                if (!_sellyThreatActive && GetSellyAiLevel() > 0)
+                {
+                    _sellyThreatActive = true;
+                    _roomsOccupiedByOtherThreats.Add(SellyCameraFourId);
+                    activated = true;
+                }
+                if (!_cabralThreatActive && GetCabralAiLevel() > 0)
+                {
+                    _cabralThreatActive = true;
+                    _roomsOccupiedByOtherThreats.Add(CabralCameraOneId);
+                    activated = true;
+                }
+                if (!_dorianThreatActive && GetDorianAiLevel() > 0)
+                {
+                    _dorianThreatActive = true;
+                    _dorianBlenderCharge = DorianMaximumCharge;
+                    _dorianAngerElapsed = 0f;
+                    _roomsOccupiedByOtherThreats.Add(DorianCameraId);
+                    activated = true;
+                    RefreshDorianBlenderControls();
+                    UpdateDorianBlenderAudio();
+                }
+                if (activated)
+                {
+                    RefreshActiveCameraThreatTexture();
+                    TriggerCameraThreatFlicker();
+                }
+            }
             int clockHour = completedHours == 0 ? 12 : completedHours;
             _clockLabel.text = $"{clockHour} AM";
         }
@@ -3849,6 +3914,14 @@ namespace FiveNightsAtLidl.UI
             if (_rightDoorClosed)
             {
                 drainPerSecond += StandardUsageDrainPerSecond;
+            }
+
+            if (CustomNight != null)
+            {
+                // Normal nights already have the 1.2 capacity multiplier; replace
+                // it here so custom 100% means standard, and 120% means +20%.
+                drainPerSecond *= BatteryCapacityMultiplier /
+                    (CustomNight.BatteryCapacityPercent / 100f);
             }
 
             _batteryRemaining = Mathf.Max(

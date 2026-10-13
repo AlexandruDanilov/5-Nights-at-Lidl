@@ -28,13 +28,22 @@ The game currently includes:
   jumpscares, and the 6 AM shift-end sequence.
 - Bolojan, Selly, Cabral, Dorian, and the Bostanica/Beregoi office threat.
 - Saved night progression, progress reset, unlocked night replay, and an
-  adjustable aggression reduction setting.
+  adjustable aggression setting (−5 easier, +5 harder).
 - Background music, Night 1 and Night 4 phone calls, door/light sounds,
   camera open/close and feed-switch sounds, spray bottle audio, doorway
   warnings, blender/alarm audio, the girls' presence audio, and a
   shared jumpscare sound, and the 6 AM victory chime.
 
 ## Roadmap
+
+### Custom Night
+
+Custom Night unlocks after completing the first five nights or entering
+`Faiar20`. It is one unnumbered preset: each character has a baseline AI
+and its own hourly increase (both 0–25). AI is capped at 25; setting both
+inputs to zero disables that character. Battery capacity is configurable:
+100% is standard, 120% supplies 20% more energy. Custom results never
+advance story progress, and retrying uses the same saved preset.
 
 ### 1. Complete audio
 
@@ -82,7 +91,7 @@ Open the project in the Unity version recorded in
 Gameplay tuning lives in
 [DemoPlaceholderController.cs](Assets/Game/Scripts/UI/DemoPlaceholderController.cs).
 The girls' camera-opening spawn chance is code-only; other serialized tuning
-fields use their saved Inspector values. The in-game aggression reduction is
+fields use their saved Inspector values. The in-game aggression modifier is
 saved through Settings.
 
 Further project documentation:

@@ -29,6 +29,14 @@ namespace FiveNightsAtLidl.UI
         private Label _replayStatusLabel;
         private TextField _replayPassword;
         private IntegerField _replayNightField;
+        private VisualElement _customNightOverlay;
+        private VisualElement _customNightLock;
+        private VisualElement _customNightForm;
+        private Label _customNightStatus;
+        private Label _customNightSummary;
+        private TextField _customNightPassword;
+        private Button _customNightButton;
+        private CustomNightSettings _customNightSettings;
 
         private void OnEnable()
         {
@@ -91,11 +99,15 @@ namespace FiveNightsAtLidl.UI
 
             _settingsButton = MenuUiFactory.CreateButton("SETTINGS", ShowSettings, "settings-button");
             actions.Add(_settingsButton);
+            _customNightButton = MenuUiFactory.CreateButton(
+                "CUSTOM NIGHT", ShowCustomNight, "custom-night-button");
+            actions.Add(_customNightButton);
             actions.Add(MenuUiFactory.CreateButton("QUIT", QuitGame, "quit-button"));
             _menuContent.Add(actions);
             _root.Add(_menuContent);
 
             BuildSettingsOverlay();
+            BuildCustomNightOverlay();
 
             Label footer = MenuUiFactory.CreateLabel(
                 $"User subjected to Bolojan Taxes  •  VERSION {Application.version}",
@@ -152,21 +164,21 @@ namespace FiveNightsAtLidl.UI
             });
             panel.Add(fullscreen);
 
-            SliderInt aggressionReduction = new SliderInt("AGGRESSION REDUCTION", -5, 5)
+            SliderInt aggressionReduction = new SliderInt("AGGRESSION", -5, 5)
             {
                 name = "aggression-reduction-slider",
-                value = MenuPreferences.AggressionReduction,
+                value = MenuPreferences.Aggression,
                 showInputField = true
             };
             aggressionReduction.AddToClassList("settings-control");
             aggressionReduction.RegisterValueChangedCallback(change =>
             {
-                MenuPreferences.AggressionReduction = change.newValue;
-                aggressionReduction.SetValueWithoutNotify(MenuPreferences.AggressionReduction);
+                MenuPreferences.Aggression = change.newValue;
+                aggressionReduction.SetValueWithoutNotify(MenuPreferences.Aggression);
             });
             panel.Add(aggressionReduction);
             Label aggressionDescription = MenuUiFactory.CreateLabel(
-                "0: normal. +5: 5 AI points easier. -5: 5 AI points harder.\nApplies to Selly, Cabral and Dorian on every night.",
+                "0: normal. -5: 5 AI points easier. +5: 5 AI points harder.\nApplies to Selly, Cabral and Dorian on every night.",
                 "night-progress-description");
             aggressionDescription.style.whiteSpace = WhiteSpace.Normal;
             panel.Add(aggressionDescription);
@@ -243,12 +255,145 @@ namespace FiveNightsAtLidl.UI
             RefreshNightReplayUi();
         }
 
+        private void BuildCustomNightOverlay()
+        {
+            _customNightSettings = MenuPreferences.LoadCustomNightSettings();
+            _customNightOverlay = new VisualElement { name = "custom-night-overlay" };
+            _customNightOverlay.AddToClassList("settings-overlay");
+            _customNightOverlay.style.display = DisplayStyle.None;
+            ScrollView panel = new ScrollView(ScrollViewMode.Vertical)
+            {
+                verticalScrollerVisibility = ScrollerVisibility.Hidden,
+                horizontalScrollerVisibility = ScrollerVisibility.Hidden
+            };
+            panel.AddToClassList("settings-panel");
+            panel.AddToClassList("custom-night-panel");
+            panel.Add(MenuUiFactory.CreateLabel("CUSTOM NIGHT", "panel-title"));
+
+            _customNightLock = new VisualElement();
+            _customNightLock.Add(CustomNightDescription(
+                "Complete the first 5 nights or enter the password to unlock."));
+            _customNightPassword = new TextField("PASSWORD") { isPasswordField = true };
+            _customNightPassword.AddToClassList("settings-control");
+            _customNightPassword.RegisterCallback<KeyDownEvent>(evt =>
+            {
+                if (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter)
+                {
+                    UnlockCustomNight();
+                    evt.StopPropagation();
+                }
+            });
+            _customNightLock.Add(_customNightPassword);
+            _customNightLock.Add(MenuUiFactory.CreateButton("UNLOCK", UnlockCustomNight));
+            panel.Add(_customNightLock);
+            _customNightStatus = CustomNightDescription(string.Empty);
+            panel.Add(_customNightStatus);
+
+            _customNightForm = new VisualElement();
+            _customNightForm.Add(CustomNightDescription(
+                "Set each character's baseline AI and how many AI points it gains each hour. Both zero disables it.\n" +
+                "Bolojan and the girls: each AI point means a 4% appearance chance.\n" +
+                "Custom AI replaces normal night/hour bonuses and the Settings aggression modifier."));
+            for (int i = 0; i < CustomNightSettings.CharacterNames.Length; i++)
+            {
+                int character = i;
+                VisualElement row = new VisualElement();
+                row.AddToClassList("custom-night-character-row");
+                row.Add(MenuUiFactory.CreateLabel(CustomNightSettings.CharacterNames[i], "custom-night-character-name"));
+                AddCustomInteger(row, "BASE AI", _customNightSettings.Aggression[i], 0, 25,
+                    value => _customNightSettings.Aggression[character] = value, true);
+                AddCustomInteger(row, "+ / HOUR", _customNightSettings.HourlyGrowth[i], 0, 25,
+                    value => _customNightSettings.HourlyGrowth[character] = value, true);
+                _customNightForm.Add(row);
+            }
+            AddCustomInteger(_customNightForm, "BATTERY CAPACITY (%)", _customNightSettings.BatteryCapacityPercent,
+                10, 300, value => _customNightSettings.BatteryCapacityPercent = value);
+            _customNightForm.Add(CustomNightDescription(
+                "100% is standard energy; 120% lasts 20% longer. The battery HUD still begins at 100%.\n" +
+                "AI = baseline + hourly increase × hours elapsed, capped at 25.\n" +
+                "All threats are available. Custom wins do not advance story progress."));
+            _customNightSummary = CustomNightDescription(string.Empty);
+            _customNightForm.Add(_customNightSummary);
+            _customNightForm.Add(MenuUiFactory.CreateButton("START CUSTOM NIGHT", StartCustomNight));
+            panel.Add(_customNightForm);
+            panel.Add(MenuUiFactory.CreateButton("BACK", HideCustomNight));
+            _customNightOverlay.Add(panel);
+            _root.Add(_customNightOverlay);
+            RefreshCustomNightUi();
+        }
+
+        private static Label CustomNightDescription(string text)
+        {
+            Label label = MenuUiFactory.CreateLabel(text, "night-progress-description");
+            label.style.whiteSpace = WhiteSpace.Normal;
+            return label;
+        }
+
+        private void AddCustomInteger(VisualElement parent, string title, int initial,
+            int minimum, int maximum, System.Action<int> changed, bool compact = false)
+        {
+            IntegerField field = new IntegerField(title) { value = initial, isDelayed = true };
+            field.AddToClassList("settings-control");
+            if (compact) field.AddToClassList("custom-night-number");
+            field.RegisterValueChangedCallback(evt =>
+            {
+                int value = Mathf.Clamp(evt.newValue, minimum, maximum);
+                field.SetValueWithoutNotify(value);
+                changed(value);
+                MenuPreferences.SaveCustomNightSettings(_customNightSettings);
+                RefreshCustomNightUi();
+            });
+            parent.Add(field);
+        }
+
+        private void UnlockCustomNight()
+        {
+            bool unlocked = MenuPreferences.UnlockNightReplay(_customNightPassword.value);
+            _customNightPassword.value = string.Empty;
+            _customNightStatus.text = unlocked ? "Custom Night unlocked." : "Incorrect password.";
+            RefreshCustomNightUi();
+            RefreshNightReplayUi();
+        }
+
+        private void RefreshCustomNightUi()
+        {
+            bool unlocked = MenuPreferences.NightReplayUnlocked;
+            _customNightLock.style.display = unlocked ? DisplayStyle.None : DisplayStyle.Flex;
+            _customNightForm.style.display = unlocked ? DisplayStyle.Flex : DisplayStyle.None;
+            _customNightButton.text = unlocked ? "CUSTOM NIGHT" : "CUSTOM NIGHT (LOCKED)";
+            string summary = "STARTING AI — CUSTOM NIGHT\n";
+            for (int i = 0; i < CustomNightSettings.CharacterNames.Length; i++)
+                summary += $"{CustomNightSettings.CharacterNames[i]}: {_customNightSettings.GetAi(i)}  ";
+            _customNightSummary.text = summary;
+        }
+
+        private void ShowCustomNight()
+        {
+            RefreshCustomNightUi();
+            _menuContent.style.display = DisplayStyle.None;
+            _customNightOverlay.style.display = DisplayStyle.Flex;
+        }
+
+        private void HideCustomNight()
+        {
+            MenuPreferences.SaveCustomNightSettings(_customNightSettings);
+            _customNightOverlay.style.display = DisplayStyle.None;
+            _menuContent.style.display = DisplayStyle.Flex;
+            _customNightButton.Focus();
+        }
+
+        private void StartCustomNight()
+        {
+            if (MenuPreferences.SelectCustomNight(_customNightSettings)) StartDemo();
+        }
+
         private void UnlockNightReplay()
         {
             bool unlocked = MenuPreferences.UnlockNightReplay(_replayPassword.value);
             _replayPassword.value = string.Empty;
             _replayStatusLabel.text = unlocked ? "Night replay unlocked." : "Incorrect password.";
             RefreshNightReplayUi();
+            RefreshCustomNightUi();
         }
 
         private void RefreshNightReplayUi()
@@ -297,6 +442,7 @@ namespace FiveNightsAtLidl.UI
             RefreshNightProgressUi();
             RefreshNightReplayUi();
             _progressResetStatusLabel.text = "Progress reset. Night 1 is ready.";
+            RefreshCustomNightUi();
             _progressResetStatusLabel.style.display = DisplayStyle.Flex;
         }
 
@@ -329,6 +475,13 @@ namespace FiveNightsAtLidl.UI
         {
             if (keyEvent.keyCode != KeyCode.Escape)
             {
+                return;
+            }
+
+            if (_customNightOverlay.style.display.value != DisplayStyle.None)
+            {
+                HideCustomNight();
+                keyEvent.StopPropagation();
                 return;
             }
 
