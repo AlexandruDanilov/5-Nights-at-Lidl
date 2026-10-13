@@ -562,6 +562,10 @@ namespace FiveNightsAtLidl.Editor
             PlayerSettings.companyName = "Independent Creator";
             PlayerSettings.productName = "Five Nights at Lidl";
             PlayerSettings.bundleVersion = "0.1.1";
+            Texture2D buildIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(
+                "Assets/Game/Art/LidlBuildIcon.png");
+            if (buildIcon != null)
+                PlayerSettings.SetIcons(NamedBuildTarget.Unknown, new[] { buildIcon }, IconKind.Any);
             PlayerSettings.SetApplicationIdentifier(
                 NamedBuildTarget.Standalone,
                 "com.independentcreator.fivenightsatlidl");
