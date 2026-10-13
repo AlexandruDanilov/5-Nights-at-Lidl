@@ -223,8 +223,11 @@ The night begins with a finite battery value displayed as a percentage. Power
 drains continuously and drains faster when systems are active.
 
 The current demo uses the relative power balance of FNAF 1 Night 1, scaled from
-its approximately 90-second hours to this demo's 60-second hours. The battery
-starts at 100%. Baseline office operation drains 0.15% per second (1% every
+its approximately 90-second hours to this demo's 50-second hours, with a **20%
+larger battery capacity** (`BatteryCapacityMultiplier = 1.2f`). The battery
+starts at 100%; normal device drains are divided by 1.2, so the same usage lasts
+20% longer. Bolojan's fixed 20-percentage-point tax is unchanged.
+Baseline office operation drains 0.15% per second (1% every
 6.67 seconds). Each closed door and the single active doorway light adds another
 0.15% per second. Raising the monitor adds only 0.075% per second (1% every
 13.33 seconds), half the standard device penalty, to encourage camera use and
@@ -485,6 +488,9 @@ is a tense but consistently understandable demo, not extreme difficulty.
   and cannot collide with a door press. When the monitor is lowered and the pair
   is first revealed, a **2-second door grace period** begins; doors work normally
   and cannot trigger their jumpscare during that window.
+- From Night 4 onward, every valid **FAS FAS** press plays
+  `Assets/Game/Audio/SFX/FasFas_Spray.mp3`, even when the pair is absent.
+  The disappearance has no additional audio cue.
 - While the pair is present, `Assets/Game/Audio/SFX/Girls_Taro.mp3` loops as
   their global office-presence sound. If the pair is present, pressing **FAS
   FAS** stops that sound immediately and the threat becomes harmless;
@@ -628,8 +634,12 @@ drain speed, not the length of his anger stages.
 - Every threat uses `Assets/Game/Audio/SFX/Universal_Jumpscare.mp3` when its
   jumpscare begins, including both Bolojan's nonfatal tax and fatal power-out
   variants. The shared volume is exposed on the gameplay controller.
-- Camera monitor raise/lower.
-- Camera feed change/static.
+- Opening and closing the camera monitor plays
+  `Assets/Game/Audio/SFX/Camera_MonitorToggle.mp3`. Selecting a different feed
+  plays `Assets/Game/Audio/SFX/Camera_FeedSwitch.mp3` immediately when loading
+  begins. Selecting the same feed or a disabled monitor control makes no sound.
+  The monitor, switching and spray volumes are independently adjustable on the
+  gameplay controller; these effects do not interrupt calls or background music.
 - Character movement or location cues.
 - Power-low and power-out feedback.
 - 6 AM/victory sound.

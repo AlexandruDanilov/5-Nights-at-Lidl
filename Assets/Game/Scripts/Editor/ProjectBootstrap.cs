@@ -113,6 +113,12 @@ namespace FiveNightsAtLidl.Editor
             "Assets/Game/Audio/SFX/Selly_DoorwayWarning.mp3";
         private const string CabralDoorwayWarningAudioPath =
             "Assets/Game/Audio/SFX/Cabral_DoorwayWarning.mp3";
+        private const string CameraMonitorToggleAudioPath =
+            "Assets/Game/Audio/SFX/Camera_MonitorToggle.mp3";
+        private const string CameraFeedSwitchAudioPath =
+            "Assets/Game/Audio/SFX/Camera_FeedSwitch.mp3";
+        private const string OfficeFightSprayAudioPath =
+            "Assets/Game/Audio/SFX/FasFas_Spray.mp3";
         private const string MenuRenderTexturePath = "Assets/Game/Settings/MenuBackground.renderTexture";
         private const string MacBuildPath = "Builds/macOS/FiveNightsAtLidl.app";
 
@@ -190,6 +196,9 @@ namespace FiveNightsAtLidl.Editor
                 LoadRequiredAudioClip(SellyDoorwayWarningAudioPath);
             AudioClip cabralDoorwayWarningAudio =
                 LoadRequiredAudioClip(CabralDoorwayWarningAudioPath);
+            AudioClip cameraMonitorToggleAudio = LoadRequiredAudioClip(CameraMonitorToggleAudioPath);
+            AudioClip cameraFeedSwitchAudio = LoadRequiredAudioClip(CameraFeedSwitchAudioPath);
+            AudioClip officeFightSprayAudio = LoadRequiredAudioClip(OfficeFightSprayAudioPath);
 
             RenderTexture menuRenderTexture = CreateOrUpdateMenuRenderTexture();
             CreateMainMenuScene(panelSettings, menuVideo, menuRenderTexture);
@@ -241,7 +250,10 @@ namespace FiveNightsAtLidl.Editor
                 lightControlAudio,
                 universalJumpscareAudio,
                 sellyDoorwayWarningAudio,
-                cabralDoorwayWarningAudio);
+                cabralDoorwayWarningAudio,
+                cameraMonitorToggleAudio,
+                cameraFeedSwitchAudio,
+                officeFightSprayAudio);
             ConfigureBuildScenes();
             ConfigurePlayerSettings();
 
@@ -376,7 +388,10 @@ namespace FiveNightsAtLidl.Editor
             AudioClip lightControlAudio,
             AudioClip universalJumpscareAudio,
             AudioClip sellyDoorwayWarningAudio,
-            AudioClip cabralDoorwayWarningAudio)
+            AudioClip cabralDoorwayWarningAudio,
+            AudioClip cameraMonitorToggleAudio,
+            AudioClip cameraFeedSwitchAudio,
+            AudioClip officeFightSprayAudio)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             CreatePresentationCamera();
@@ -433,7 +448,10 @@ namespace FiveNightsAtLidl.Editor
                 lightControlAudio,
                 universalJumpscareAudio,
                 sellyDoorwayWarningAudio,
-                cabralDoorwayWarningAudio);
+                cabralDoorwayWarningAudio,
+                cameraMonitorToggleAudio,
+                cameraFeedSwitchAudio,
+                officeFightSprayAudio);
 
             EditorSceneManager.SaveScene(scene, DemoScenePath);
         }
@@ -537,7 +555,7 @@ namespace FiveNightsAtLidl.Editor
         {
             PlayerSettings.companyName = "Independent Creator";
             PlayerSettings.productName = "Five Nights at Lidl";
-            PlayerSettings.bundleVersion = "0.1.0";
+            PlayerSettings.bundleVersion = "0.1.1";
             PlayerSettings.SetApplicationIdentifier(
                 NamedBuildTarget.Standalone,
                 "com.independentcreator.fivenightsatlidl");

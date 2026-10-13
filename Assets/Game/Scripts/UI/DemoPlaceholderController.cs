@@ -14,11 +14,13 @@ namespace FiveNightsAtLidl.UI
         private const float OriginalSecondsPerGameHour = 90f;
         private const int FinalHour = 6;
         private const float StartingBatteryPercent = 100f;
+        // 20% more stored energy, still represented as 0–100% on the HUD.
+        private const float BatteryCapacityMultiplier = 1.2f;
         private const float OriginalUsageDrainPerSecond = 0.1f;
         private const float NightLengthDrainScale =
             OriginalSecondsPerGameHour / SecondsPerGameHour;
         private const float StandardUsageDrainPerSecond =
-            OriginalUsageDrainPerSecond * NightLengthDrainScale;
+            OriginalUsageDrainPerSecond * NightLengthDrainScale / BatteryCapacityMultiplier;
         private const float CameraUsageDrainPerSecond =
             StandardUsageDrainPerSecond * 0.5f;
         private const int CriticalBatteryMaximum = 20;
@@ -329,6 +331,25 @@ namespace FiveNightsAtLidl.UI
 
         [SerializeField, Range(0f, 1f)]
         private float _cabralDoorwayWarningVolume = 0.75f;
+
+        [Header("Camera and Spray Audio")]
+        [SerializeField]
+        private AudioClip _cameraMonitorToggleClip;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _cameraMonitorToggleVolume = 0.55f;
+
+        [SerializeField]
+        private AudioClip _cameraFeedSwitchClip;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _cameraFeedSwitchVolume = 0.5f;
+
+        [SerializeField]
+        private AudioClip _officeFightSprayClip;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _officeFightSprayVolume = 0.65f;
 
         [Header("Jumpscare Audio")]
         [SerializeField]
@@ -1144,11 +1165,12 @@ namespace FiveNightsAtLidl.UI
 
         private void SprayOfficeFight()
         {
-            if (_nightEnded || _powerFailureActive)
+            if (!_officeFightThreatEnabled || _nightEnded || _powerFailureActive)
             {
                 return;
             }
 
+            PlayOfficeControlSound(_officeFightSprayClip, _officeFightSprayVolume);
             if (!_officeFightActive)
             {
                 return;
@@ -1556,6 +1578,7 @@ namespace FiveNightsAtLidl.UI
             _selectedCameraButton = cameraButton;
             _selectedCameraButton.AddToClassList("camera-node-selected");
             _activeCameraLabel.text = $"{cameraId} / {locationName}";
+            PlayOfficeControlSound(_cameraFeedSwitchClip, _cameraFeedSwitchVolume);
             BeginCameraFeedSwitch(cameraId, locationName);
         }
 
@@ -1792,6 +1815,7 @@ namespace FiveNightsAtLidl.UI
 
             TurnOffLights();
             _cameraDashboardOpen = true;
+            PlayOfficeControlSound(_cameraMonitorToggleClip, _cameraMonitorToggleVolume);
             _officeControlsLayer.style.display = DisplayStyle.None;
             _cameraDashboard.style.display = DisplayStyle.Flex;
             _cameraDashboard.BringToFront();
@@ -1808,6 +1832,11 @@ namespace FiveNightsAtLidl.UI
 
         private void HideCameraDashboard()
         {
+            if (_cameraDashboardOpen && !_nightEnded && !_powerFailureActive)
+            {
+                PlayOfficeControlSound(_cameraMonitorToggleClip, _cameraMonitorToggleVolume);
+            }
+
             _dorianChargeHeld = false;
             DismissBolojan();
             _cameraDashboardOpen = false;
@@ -3581,7 +3610,10 @@ namespace FiveNightsAtLidl.UI
             AudioClip lightControlClip,
             AudioClip universalJumpscareClip,
             AudioClip sellyDoorwayWarningClip,
-            AudioClip cabralDoorwayWarningClip)
+            AudioClip cabralDoorwayWarningClip,
+            AudioClip cameraMonitorToggleClip,
+            AudioClip cameraFeedSwitchClip,
+            AudioClip officeFightSprayClip)
         {
             _fallbackPanelSettings = panelSettings;
             _officeBackground = officeBackground;
@@ -3631,6 +3663,9 @@ namespace FiveNightsAtLidl.UI
             _universalJumpscareClip = universalJumpscareClip;
             _sellyDoorwayWarningClip = sellyDoorwayWarningClip;
             _cabralDoorwayWarningClip = cabralDoorwayWarningClip;
+            _cameraMonitorToggleClip = cameraMonitorToggleClip;
+            _cameraFeedSwitchClip = cameraFeedSwitchClip;
+            _officeFightSprayClip = officeFightSprayClip;
         }
 
         private void UpdateClock(bool force)

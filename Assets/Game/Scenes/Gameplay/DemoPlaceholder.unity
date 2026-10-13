@@ -319,6 +319,12 @@ MonoBehaviour:
   _sellyDoorwayWarningVolume: 0.75
   _cabralDoorwayWarningClip: {fileID: 8300000, guid: 8a914e08684a48aebac654dc35e9c9a7, type: 3}
   _cabralDoorwayWarningVolume: 0.75
+  _cameraMonitorToggleClip: {fileID: 8300000, guid: 50afdc9a980e425f9dc2d2b7d6cd0862, type: 3}
+  _cameraMonitorToggleVolume: 0.55
+  _cameraFeedSwitchClip: {fileID: 8300000, guid: 7196c2ba5c8c464796342106473c6bd4, type: 3}
+  _cameraFeedSwitchVolume: 0.5
+  _officeFightSprayClip: {fileID: 8300000, guid: 7c40e1b7867e4aa4a35d3f10247a695c, type: 3}
+  _officeFightSprayVolume: 0.65
   _universalJumpscareClip: {fileID: 8300000, guid: 9e0a76753cb742af8fd28239b23c2422, type: 3}
   _universalJumpscareVolume: 0.8
 --- !u!114 &698692832

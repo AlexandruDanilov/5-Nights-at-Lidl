@@ -11,10 +11,7 @@ Unity-supported format.
 
 | Suggested asset | Use | Playback | Useful search terms |
 | --- | --- | --- | --- |
-| `Assets/Game/Audio/SFX/Camera_MonitorUp.wav` | Camera monitor raised | One-shot | security monitor mechanical raise, CRT screen flip up |
-| `Assets/Game/Audio/SFX/Camera_MonitorDown.wav` | Camera monitor lowered | One-shot | security monitor mechanical lower, CRT screen flip down |
 | `Assets/Game/Audio/Ambience/Camera_HumLoop.ogg` | CCTV dashboard is open | Seamless loop | CCTV electrical hum, CRT static ambience |
-| `Assets/Game/Audio/SFX/Camera_FeedSwitch.wav` | A different camera feed begins loading | Short one-shot | CCTV static burst, radio interference glitch |
 | `Assets/Game/Audio/SFX/Power_LowWarning.wav` | Battery reaches a low threshold | Repeating one-shot or loop | low battery warning beep, electrical warning pulse |
 | `Assets/Game/Audio/SFX/Power_Out.wav` | Battery reaches 0% and the office shuts down | One-shot | electrical power failure, transformer shutdown |
 | `Assets/Game/Audio/SFX/Night_6AM.wav` | Shift reaches 6 AM | One-shot/stinger | victory clock chime, shift complete stinger |
@@ -46,16 +43,19 @@ Unity-supported format.
 
 ## Intentionally silent
 
-- **FAS FAS** currently stops the girls' `Girls_Taro.mp3` immediately without a
-  separate spray or disappearance sound, matching the latest design direction.
+- The girls' disappearance has no separate audio cue. **FAS FAS** now plays
+  `FasFas_Spray.mp3` on every valid press from Night 4 onward and immediately
+  stops `Girls_Taro.mp3` when the pair is present.
 - Automatic door/light shutdown during the end-of-night fade does not reuse the
   manual door and light button sounds.
 
 ## Already supplied and implemented
 
-- Night 1 phone call
+- Night 1 and Night 4 phone calls
 - Global manele background track
 - Door and light controls
+- Camera monitor open/close and camera feed switching
+- FAS FAS spray bottle
 - Selly and Cabral doorway warning sounds
 - Dorian blender and final-stage alarm
 - Girls' Taro office-presence sound
