@@ -32,7 +32,7 @@ The game currently includes:
 - Background music, Night 1 and Night 4 phone calls, door/light sounds,
   camera open/close and feed-switch sounds, spray bottle audio, doorway
   warnings, blender/alarm audio, the girls' presence audio, and a
-  shared jumpscare sound.
+  shared jumpscare sound, and the 6 AM victory chime.
 
 ## Roadmap
 
@@ -42,7 +42,8 @@ The game currently includes:
   [AUDIO_ASSET_TODO.md](AUDIO_ASSET_TODO.md).
 - [x] Add camera monitor open/close, feed switching, and spray bottle sounds.
 - [ ] Finish CCTV ambience and remaining camera interference cues.
-- [ ] Add low-power, power-out, and 6 AM audio feedback.
+- [x] Add the 5:59–6:00 AM victory clock animation and night-over chime.
+- [ ] Add low-power and power-out audio feedback.
 - [ ] Review night-specific phone-call coverage and add the remaining calls
   where needed.
 - [ ] Balance volumes and verify mute, looping, and night-end behavior.

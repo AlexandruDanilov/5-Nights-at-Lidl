@@ -967,6 +967,92 @@
     -unity-text-outline-color: rgb(24, 0, 0);
 }
 
+.victory-clock-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(0, 0, 0);
+}
+
+.victory-clock-face {
+    flex-direction: row;
+    align-items: center;
+    height: 144px;
+}
+
+.victory-clock-digit-slot {
+    position: relative;
+    width: 100px;
+    height: 144px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.victory-clock-half {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 72px;
+    overflow: hidden;
+    background-color: rgb(3, 3, 3);
+}
+
+.victory-clock-top-flap {
+    transform-origin: 50% 100%;
+}
+
+.victory-clock-bottom-flap {
+    transform-origin: 50% 0%;
+}
+
+.victory-clock-flap-shadow {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgb(0, 0, 0);
+}
+
+.victory-clock-hinge {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 71px;
+    height: 2px;
+    background-color: rgb(0, 0, 0);
+}
+
+.victory-clock-digit,
+.victory-clock-colon {
+    height: 144px;
+    flex-shrink: 0;
+    padding: 0;
+    margin: 0;
+    font-size: 116px;
+    color: rgb(235, 235, 235);
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 0;
+}
+
+.victory-clock-colon {
+    width: 44px;
+}
+
+.victory-clock-period {
+    height: 144px;
+    width: 94px;
+    margin-left: 16px;
+    font-size: 42px;
+    color: rgb(235, 235, 235);
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 0;
+}
+
 .night-result-overlay {
     position: absolute;
     left: 0;

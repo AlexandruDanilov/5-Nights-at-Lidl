@@ -325,6 +325,8 @@ MonoBehaviour:
   _cameraFeedSwitchVolume: 0.5
   _officeFightSprayClip: {fileID: 8300000, guid: 7c40e1b7867e4aa4a35d3f10247a695c, type: 3}
   _officeFightSprayVolume: 0.65
+  _victoryChimeClip: {fileID: 8300000, guid: 39ea693cb39c4d2193a0840924eac790, type: 3}
+  _victoryChimeVolume: 0.75
   _universalJumpscareClip: {fileID: 8300000, guid: 9e0a76753cb742af8fd28239b23c2422, type: 3}
   _universalJumpscareVolume: 0.8
 --- !u!114 &698692832

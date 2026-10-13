@@ -119,6 +119,8 @@ namespace FiveNightsAtLidl.Editor
             "Assets/Game/Audio/SFX/Camera_FeedSwitch.mp3";
         private const string OfficeFightSprayAudioPath =
             "Assets/Game/Audio/SFX/FasFas_Spray.mp3";
+        private const string VictoryChimeAudioPath =
+            "Assets/Game/Audio/SFX/Night_6AM.mp3";
         private const string MenuRenderTexturePath = "Assets/Game/Settings/MenuBackground.renderTexture";
         private const string MacBuildPath = "Builds/macOS/FiveNightsAtLidl.app";
 
@@ -199,6 +201,7 @@ namespace FiveNightsAtLidl.Editor
             AudioClip cameraMonitorToggleAudio = LoadRequiredAudioClip(CameraMonitorToggleAudioPath);
             AudioClip cameraFeedSwitchAudio = LoadRequiredAudioClip(CameraFeedSwitchAudioPath);
             AudioClip officeFightSprayAudio = LoadRequiredAudioClip(OfficeFightSprayAudioPath);
+            AudioClip victoryChimeAudio = LoadRequiredAudioClip(VictoryChimeAudioPath);
 
             RenderTexture menuRenderTexture = CreateOrUpdateMenuRenderTexture();
             CreateMainMenuScene(panelSettings, menuVideo, menuRenderTexture);
@@ -253,7 +256,8 @@ namespace FiveNightsAtLidl.Editor
                 cabralDoorwayWarningAudio,
                 cameraMonitorToggleAudio,
                 cameraFeedSwitchAudio,
-                officeFightSprayAudio);
+                officeFightSprayAudio,
+                victoryChimeAudio);
             ConfigureBuildScenes();
             ConfigurePlayerSettings();
 
@@ -391,7 +395,8 @@ namespace FiveNightsAtLidl.Editor
             AudioClip cabralDoorwayWarningAudio,
             AudioClip cameraMonitorToggleAudio,
             AudioClip cameraFeedSwitchAudio,
-            AudioClip officeFightSprayAudio)
+            AudioClip officeFightSprayAudio,
+            AudioClip victoryChimeAudio)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             CreatePresentationCamera();
@@ -451,7 +456,8 @@ namespace FiveNightsAtLidl.Editor
                 cabralDoorwayWarningAudio,
                 cameraMonitorToggleAudio,
                 cameraFeedSwitchAudio,
-                officeFightSprayAudio);
+                officeFightSprayAudio,
+                victoryChimeAudio);
 
             EditorSceneManager.SaveScene(scene, DemoScenePath);
         }

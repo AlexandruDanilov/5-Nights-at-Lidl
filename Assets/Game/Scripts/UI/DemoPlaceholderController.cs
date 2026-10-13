@@ -37,6 +37,8 @@ namespace FiveNightsAtLidl.UI
         private const float PowerFailureChanceStep = 0.05f;
         private const float VictoryLightsOutHoldSeconds = 0.3f;
         private const float VictoryBlackoutFadeSeconds = 1.35f;
+        private const float VictoryClockFallbackDurationSeconds = 6f;
+        private const float VictoryClockDigitHeight = 144f;
         private const string BolojanTaxMessage = "BOLOJAN TAX";
         private const string ElectricityWastedMessage = "ELECTRICITY WASTED";
         private const string SellyCameraFourId = "CAM 04";
@@ -358,6 +360,14 @@ namespace FiveNightsAtLidl.UI
         [SerializeField, Range(0f, 1f)]
         private float _universalJumpscareVolume = 0.8f;
 
+        [Header("Victory Audio")]
+        [SerializeField]
+        private AudioClip _victoryChimeClip;
+
+        [SerializeField, Range(0f, 1f)]
+        private float _victoryChimeVolume = 0.75f;
+
+        private bool _victoryChimePlayed;
         private Label _clockLabel;
         private Label _batteryLabel;
         private Label _activeCameraLabel;
@@ -374,6 +384,12 @@ namespace FiveNightsAtLidl.UI
         private VisualElement _bolojanJumpscareOverlay;
         private VisualElement _powerFailureDimOverlay;
         private VisualElement _resultOverlay;
+        private VisualElement _victoryClockOverlay;
+        private VisualElement _victoryClockFace;
+        private readonly VisualElement[] _victoryOldTopFlaps = new VisualElement[3];
+        private readonly VisualElement[] _victoryNewBottomFlaps = new VisualElement[3];
+        private readonly VisualElement[] _victoryTopShadows = new VisualElement[3];
+        private readonly VisualElement[] _victoryBottomShadows = new VisualElement[3];
         private Image _leftOfficeStateImage;
         private Image _rightOfficeStateImage;
         private Image _cameraFeedImage;
@@ -682,7 +698,7 @@ namespace FiveNightsAtLidl.UI
             {
                 if (keyEvent.keyCode == KeyCode.Escape)
                 {
-                    if (_bolojanJumpscareActive)
+                    if (_bolojanJumpscareActive || _victoryTransitionActive)
                     {
                         keyEvent.StopPropagation();
                         return;
@@ -749,6 +765,7 @@ namespace FiveNightsAtLidl.UI
             batteryHud.BringToFront();
             BuildNightIntro(root);
             BuildBolojanJumpscare(root);
+            BuildVictoryClockOverlay(root);
             BuildResultOverlay(root);
             root.schedule.Execute(root.Focus);
         }
@@ -819,6 +836,111 @@ namespace FiveNightsAtLidl.UI
             _bolojanJumpscareOverlay.Add(_bolojanJumpscareMessageLabel);
 
             root.Add(_bolojanJumpscareOverlay);
+        }
+
+        private void BuildVictoryClockOverlay(VisualElement root)
+        {
+            _victoryClockOverlay = new VisualElement { name = "victory-clock-overlay" };
+            _victoryClockOverlay.AddToClassList("victory-clock-overlay");
+            _victoryClockOverlay.style.display = DisplayStyle.None;
+            _victoryClockFace = new VisualElement { name = "victory-clock-face" };
+            _victoryClockFace.AddToClassList("victory-clock-face");
+            AddVictoryClockDigit(0, "5", "6");
+            _victoryClockFace.Add(MenuUiFactory.CreateLabel(":", "victory-clock-colon"));
+            AddVictoryClockDigit(1, "5", "0");
+            AddVictoryClockDigit(2, "9", "0");
+            _victoryClockFace.Add(MenuUiFactory.CreateLabel("AM", "victory-clock-period"));
+            _victoryClockOverlay.Add(_victoryClockFace);
+            root.Add(_victoryClockOverlay);
+        }
+
+        private void AddVictoryClockDigit(int index, string previous, string next)
+        {
+            VisualElement slot = new VisualElement();
+            slot.AddToClassList("victory-clock-digit-slot");
+            // Stationary rear cards, covered by two cards rotating around a hinge.
+            slot.Add(CreateVictoryClockHalf(next, false));
+            slot.Add(CreateVictoryClockHalf(previous, true));
+            VisualElement oldTop = CreateVictoryClockHalf(previous, false);
+            oldTop.AddToClassList("victory-clock-top-flap");
+            VisualElement newBottom = CreateVictoryClockHalf(next, true);
+            newBottom.AddToClassList("victory-clock-bottom-flap");
+            _victoryOldTopFlaps[index] = oldTop;
+            _victoryNewBottomFlaps[index] = newBottom;
+            _victoryTopShadows[index] = AddVictoryFlapShadow(oldTop);
+            _victoryBottomShadows[index] = AddVictoryFlapShadow(newBottom);
+            slot.Add(oldTop);
+            slot.Add(newBottom);
+            VisualElement hinge = new VisualElement();
+            hinge.AddToClassList("victory-clock-hinge");
+            slot.Add(hinge);
+            _victoryClockFace.Add(slot);
+        }
+
+        private static VisualElement CreateVictoryClockHalf(string digit, bool bottom)
+        {
+            VisualElement half = new VisualElement();
+            half.AddToClassList("victory-clock-half");
+            half.style.top = bottom ? VictoryClockDigitHeight / 2f : 0f;
+            Label face = MenuUiFactory.CreateLabel(digit, "victory-clock-digit");
+            face.style.position = Position.Absolute;
+            face.style.left = 0f;
+            face.style.right = 0f;
+            face.style.top = bottom ? -VictoryClockDigitHeight / 2f : 0f;
+            half.Add(face);
+            return half;
+        }
+
+        private static VisualElement AddVictoryFlapShadow(VisualElement flap)
+        {
+            VisualElement shadow = new VisualElement();
+            shadow.AddToClassList("victory-clock-flap-shadow");
+            flap.Add(shadow);
+            return shadow;
+        }
+
+        private float GetVictoryClockDuration()
+        {
+            return _victoryChimeClip != null && _victoryChimeClip.length > 0f
+                ? Mathf.Max(1f, _victoryChimeClip.length)
+                : VictoryClockFallbackDurationSeconds;
+        }
+
+        private void AnimateVictoryClock(float elapsedSeconds)
+        {
+            if (!_victoryChimePlayed)
+            {
+                _victoryChimePlayed = true;
+                PlayOfficeControlSound(_victoryChimeClip, _victoryChimeVolume);
+            }
+
+            _victoryClockOverlay.style.display = DisplayStyle.Flex;
+            _victoryClockOverlay.BringToFront();
+            float duration = GetVictoryClockDuration();
+            float fadeIn = Mathf.Clamp01(elapsedSeconds / 0.2f);
+            float fadeOut = Mathf.Clamp01((duration - elapsedSeconds) / 0.25f);
+            float crtFlicker = elapsedSeconds < duration * 0.53f
+                ? 0.94f + Mathf.PerlinNoise(elapsedSeconds * 24f, 0.36f) * 0.06f
+                : 1f;
+            _victoryClockFace.style.opacity = fadeIn * fadeOut * crtFlicker;
+
+            // The hour settles at the chime's midpoint; hold 6:00 until it ends.
+            AnimateVictoryClockDigit(0, elapsedSeconds, duration * 0.37f, duration * 0.16f);
+            AnimateVictoryClockDigit(1, elapsedSeconds, duration * 0.31f, duration * 0.16f);
+            AnimateVictoryClockDigit(2, elapsedSeconds, duration * 0.25f, duration * 0.16f);
+        }
+
+        private void AnimateVictoryClockDigit(int index, float elapsed, float delay, float duration)
+        {
+            float progress = Mathf.Clamp01((elapsed - delay) / duration);
+            float eased = Mathf.SmoothStep(0f, 1f, progress);
+            float rotation = Mathf.PI * eased;
+            float topScale = Mathf.Max(0f, Mathf.Cos(rotation));
+            float bottomScale = Mathf.Max(0f, -Mathf.Cos(rotation));
+            _victoryOldTopFlaps[index].style.scale = new Scale(new Vector3(1f, topScale, 1f));
+            _victoryNewBottomFlaps[index].style.scale = new Scale(new Vector3(1f, bottomScale, 1f));
+            _victoryTopShadows[index].style.opacity = (1f - topScale) * 0.85f;
+            _victoryBottomShadows[index].style.opacity = (1f - bottomScale) * 0.85f;
         }
 
         private void BuildResultOverlay(VisualElement root)
@@ -3450,6 +3572,12 @@ namespace FiveNightsAtLidl.UI
             _nightEnded = true;
             _victoryTransitionActive = true;
             _victoryTransitionElapsed = 0f;
+            _victoryChimePlayed = false;
+            _victoryClockOverlay.style.display = DisplayStyle.None;
+            for (int digit = 0; digit < _victoryOldTopFlaps.Length; digit++)
+            {
+                AnimateVictoryClockDigit(digit, 0f, 1f, 1f);
+            }
             StopPhoneCall();
             StopNightAmbience();
             _powerFailureActive = false;
@@ -3502,6 +3630,15 @@ namespace FiveNightsAtLidl.UI
                 return;
             }
 
+            float clockElapsed = _victoryTransitionElapsed -
+                VictoryLightsOutHoldSeconds - VictoryBlackoutFadeSeconds;
+            AnimateVictoryClock(clockElapsed);
+            if (clockElapsed < GetVictoryClockDuration())
+            {
+                return;
+            }
+
+            _victoryClockOverlay.style.display = DisplayStyle.None;
             _victoryTransitionActive = false;
             MenuPreferences.CompleteNight(_nightNumber);
             ShowResultOverlay(victory: true);
@@ -3613,7 +3750,8 @@ namespace FiveNightsAtLidl.UI
             AudioClip cabralDoorwayWarningClip,
             AudioClip cameraMonitorToggleClip,
             AudioClip cameraFeedSwitchClip,
-            AudioClip officeFightSprayClip)
+            AudioClip officeFightSprayClip,
+            AudioClip victoryChimeClip)
         {
             _fallbackPanelSettings = panelSettings;
             _officeBackground = officeBackground;
@@ -3666,6 +3804,7 @@ namespace FiveNightsAtLidl.UI
             _cameraMonitorToggleClip = cameraMonitorToggleClip;
             _cameraFeedSwitchClip = cameraFeedSwitchClip;
             _officeFightSprayClip = officeFightSprayClip;
+            _victoryChimeClip = victoryChimeClip;
         }
 
         private void UpdateClock(bool force)

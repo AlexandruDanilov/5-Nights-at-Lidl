@@ -14,7 +14,6 @@ Unity-supported format.
 | `Assets/Game/Audio/Ambience/Camera_HumLoop.ogg` | CCTV dashboard is open | Seamless loop | CCTV electrical hum, CRT static ambience |
 | `Assets/Game/Audio/SFX/Power_LowWarning.wav` | Battery reaches a low threshold | Repeating one-shot or loop | low battery warning beep, electrical warning pulse |
 | `Assets/Game/Audio/SFX/Power_Out.wav` | Battery reaches 0% and the office shuts down | One-shot | electrical power failure, transformer shutdown |
-| `Assets/Game/Audio/SFX/Night_6AM.wav` | Shift reaches 6 AM | One-shot/stinger | victory clock chime, shift complete stinger |
 
 ## Threat feedback
 
@@ -60,3 +59,4 @@ Unity-supported format.
 - Dorian blender and final-stage alarm
 - Girls' Taro office-presence sound
 - Universal jumpscare sound
+- 6 AM clock-animation victory chime

@@ -540,7 +540,18 @@ behavior description takes precedence.
 - Player controls are disabled.
 - The office lights and door states power down first. After a short readable
   pause, an unstable dimming layer fades the entire office and HUD completely
-  to black before the result screen is allowed to appear.
+  to black.
+- A **mechanical split-panel clock animation** then displays large white pixel
+  digits on black. The upper and lower digit panels rotate around a center hinge
+  from **5:59 AM to 6:00 AM**, with staggered minutes/hour movement, rotating
+  panel shadows and subtle CRT flicker. The hour settles near the chime's midpoint,
+  holds at 6:00, and fades out as the chime finishes. Duration is taken from the
+  supplied clip (currently about six seconds; six-second fallback without audio).
+  It plays only on victory;
+  controls and Escape remain disabled throughout. The supplied
+  `Assets/Game/Audio/SFX/Night_6AM.mp3` chime plays once as the clock animation
+  begins, and the result screen appears after it finishes. Its volume is exposed
+  on the gameplay controller. No chime plays for losses.
 - A **SHIFT ENDED** result screen confirms the completed night and says,
   "See you around for Night N."
 - The completed night advances the persistent current-night value.
@@ -642,7 +653,7 @@ drain speed, not the length of his anger stages.
   gameplay controller; these effects do not interrupt calls or background music.
 - Character movement or location cues.
 - Power-low and power-out feedback.
-- 6 AM/victory sound.
+- The 6 AM victory animation plays `Assets/Game/Audio/SFX/Night_6AM.mp3` once.
 - Menu selection and confirmation sounds.
 
 Codex will provide filenames, dimensions, formats, frame counts, and loop details
