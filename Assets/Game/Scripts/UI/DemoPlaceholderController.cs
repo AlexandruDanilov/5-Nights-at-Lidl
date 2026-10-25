@@ -294,6 +294,9 @@ namespace FiveNightsAtLidl.UI
         private AudioClip _nightOnePhoneCallClip;
 
         [SerializeField]
+        private AudioClip _nightTwoPhoneCallClip;
+
+        [SerializeField]
         private AudioClip _nightFourPhoneCallClip;
 
         [SerializeField, Min(0f)]
@@ -3009,6 +3012,8 @@ namespace FiveNightsAtLidl.UI
             {
                 case 1:
                     return _nightOnePhoneCallClip;
+                case 2:
+                    return _nightTwoPhoneCallClip;
                 case 4:
                     return _nightFourPhoneCallClip;
                 default:
@@ -3775,6 +3780,7 @@ namespace FiveNightsAtLidl.UI
             AudioClip officeFightPresenceClip,
             Texture2D officeNightFourBackground,
             AudioClip nightOnePhoneCallClip,
+            AudioClip nightTwoPhoneCallClip,
             AudioClip nightFourPhoneCallClip,
             AudioClip nightAmbienceClip,
             AudioClip doorControlClip,
@@ -3828,6 +3834,7 @@ namespace FiveNightsAtLidl.UI
             _officeFightPresenceClip = officeFightPresenceClip;
             _officeNightFourBackground = officeNightFourBackground;
             _nightOnePhoneCallClip = nightOnePhoneCallClip;
+            _nightTwoPhoneCallClip = nightTwoPhoneCallClip;
             _nightFourPhoneCallClip = nightFourPhoneCallClip;
             _nightAmbienceClip = nightAmbienceClip;
             _doorControlClip = doorControlClip;

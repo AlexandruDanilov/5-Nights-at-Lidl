@@ -214,6 +214,7 @@ MonoBehaviour:
   _officeFightPresenceVolume: 0.32
   _bostanicaBeregoiDoorGraceSeconds: 2
   _nightOnePhoneCallClip: {fileID: 8300000, guid: d8f2a4c5b6e741e9a31f5270dc8b149e, type: 3}
+  _nightTwoPhoneCallClip: {fileID: 8300000, guid: c7905066d1574f3a91fdf3d920b23b7d, type: 3}
   _nightFourPhoneCallClip: {fileID: 8300000, guid: 1b19e8a742d14afdb071d563b9ea7394, type: 3}
   _phoneCallStartDelaySeconds: 10
   _phoneCallVolume: 0.8

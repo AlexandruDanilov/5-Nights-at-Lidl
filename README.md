@@ -29,7 +29,7 @@ The game currently includes:
 - Bolojan, Selly, Cabral, Dorian, and the Bostanica/Beregoi office threat.
 - Saved night progression, progress reset, unlocked night replay, and an
   adjustable aggression setting (−5 easier, +5 harder).
-- Background music, Night 1 and Night 4 phone calls, door/light sounds,
+- Background music, Night 1, Night 2 and Night 4 phone calls, door/light sounds,
   camera open/close and feed-switch sounds, spray bottle audio, doorway
   warnings, blender/alarm audio, the girls' presence audio, and a
   shared jumpscare sound, and the 6 AM victory chime.

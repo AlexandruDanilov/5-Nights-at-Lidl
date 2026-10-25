@@ -101,6 +101,8 @@ namespace FiveNightsAtLidl.Editor
             "Assets/Game/Audio/Voice/Night01_PhoneCall.mp3";
         private const string NightFourPhoneCallPath =
             "Assets/Game/Audio/Voice/Night04_PhoneCall.mp3";
+        private const string NightTwoPhoneCallPath =
+            "Assets/Game/Audio/Voice/Night02_PhoneCall.mp3";
         private const string NightAmbiencePath =
             "Assets/Game/Audio/Ambience/Manele_Lofi_01.mp3";
         private const string DoorControlAudioPath =
@@ -186,6 +188,8 @@ namespace FiveNightsAtLidl.Editor
                 LoadRequiredAudioClip(NightOnePhoneCallPath);
             AudioClip nightFourPhoneCall =
                 LoadRequiredAudioClip(NightFourPhoneCallPath);
+            AudioClip nightTwoPhoneCall =
+                LoadRequiredAudioClip(NightTwoPhoneCallPath);
             AudioClip nightAmbience =
                 LoadRequiredAudioClip(NightAmbiencePath);
             AudioClip doorControlAudio =
@@ -247,6 +251,7 @@ namespace FiveNightsAtLidl.Editor
                 officeFightPresenceAudio,
                 officeNightFourBackground,
                 nightOnePhoneCall,
+                nightTwoPhoneCall,
                 nightFourPhoneCall,
                 nightAmbience,
                 doorControlAudio,
@@ -386,6 +391,7 @@ namespace FiveNightsAtLidl.Editor
             AudioClip officeFightPresenceAudio,
             Texture2D officeNightFourBackground,
             AudioClip nightOnePhoneCall,
+            AudioClip nightTwoPhoneCall,
             AudioClip nightFourPhoneCall,
             AudioClip nightAmbience,
             AudioClip doorControlAudio,
@@ -447,6 +453,7 @@ namespace FiveNightsAtLidl.Editor
                 officeFightPresenceAudio,
                 officeNightFourBackground,
                 nightOnePhoneCall,
+                nightTwoPhoneCall,
                 nightFourPhoneCall,
                 nightAmbience,
                 doorControlAudio,
