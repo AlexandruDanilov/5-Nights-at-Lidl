@@ -2931,7 +2931,7 @@ namespace FiveNightsAtLidl.UI
             _phoneCallAudioSource.playOnAwake = false;
             _phoneCallAudioSource.loop = false;
             _phoneCallAudioSource.spatialBlend = 0f;
-            _phoneCallAudioSource.volume = _phoneCallVolume;
+            _phoneCallAudioSource.volume = GetNightPhoneCallVolume();
             _phoneCallAudioSource.clip = GetNightPhoneCallClip();
 
             if (_nightAmbienceAudioSource == null)
@@ -3021,6 +3021,11 @@ namespace FiveNightsAtLidl.UI
             }
         }
 
+        private float GetNightPhoneCallVolume()
+        {
+            return Mathf.Clamp01(_phoneCallVolume * (_nightNumber == 2 ? 1.2f : 1f));
+        }
+
         private void UpdatePhoneCall()
         {
             AudioClip phoneCallClip = GetNightPhoneCallClip();
@@ -3041,7 +3046,7 @@ namespace FiveNightsAtLidl.UI
                 _phoneCallStarted = true;
                 _phoneCallActive = true;
                 _phoneCallAudioSource.clip = phoneCallClip;
-                _phoneCallAudioSource.volume = _phoneCallVolume;
+                _phoneCallAudioSource.volume = GetNightPhoneCallVolume();
                 _phoneCallAudioSource.Play();
                 RefreshPhoneCallControls();
                 return;
